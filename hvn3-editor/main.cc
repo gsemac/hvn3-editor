@@ -8,9 +8,7 @@ int main(int argc, char* argv[]) {
 	// Initialize game properties.
 	System::Properties properties;
 	properties.DisplaySize = SizeI(960, 720);
-	properties.DisplayTitle = "Rescind7";
-	properties.FrameRate = 60.0;
-	properties.FixedFrameRate = true;
+	properties.FixedFrameRate = false;
 	properties.DebugMode = false;
 	properties.ScalingMode = ScalingMode::Fixed;
 	properties.DisplayFlags = DisplayFlags::Resizable;
