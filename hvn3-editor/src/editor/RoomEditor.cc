@@ -1,5 +1,5 @@
 #include "hvn3/core/IGameManager.h"
-#include "hvn3/core/Properties.h"
+#include "hvn3/core/GameProperties.h"
 #include "hvn3/io/Path.h"
 #include "hvn3/rooms/RoomExporter.h"
 #include "hvn3/rooms/RoomImporter.h"
@@ -502,6 +502,7 @@ namespace hvn3 {
 			button_ok->SetWidth(100);
 
 			textbox_resource_base_dir->SetAnchor(Gui::Anchor::Left | Gui::Anchor::Right);
+			textbox_resource_base_dir->SetText(_resource_base_directory);
 			textbox_grid_w->SetText(StringUtils::ToString(_room_view->GridCellSize().width));
 			textbox_grid_h->SetText(StringUtils::ToString(_room_view->GridCellSize().height));
 			button_ok->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
@@ -516,6 +517,17 @@ namespace hvn3 {
 				dialog->Close();
 
 			});
+			button_resource_base_dir->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
+
+				FileDialog fd(FileDialogFlags::Folder);
+				fd.SetInitialDirectory(_resource_base_directory);
+
+				if (fd.ShowDialog()) {
+					_resource_base_directory = fd.FileName();
+					textbox_resource_base_dir->SetText(_resource_base_directory);
+				}
+
+			});
 
 			dialog->GetChildren().Add(label_resource_base_dir);
 			dialog->GetChildren().Add(textbox_resource_base_dir);
@@ -527,7 +539,7 @@ namespace hvn3 {
 			dialog->GetChildren().Add(button_ok);
 
 			_widgets.ShowDialog(std::unique_ptr<Gui::IWidget>(dialog));
-			
+
 			Gui::WidgetLayoutBuilder builder;
 
 			builder.PlaceAt(label_resource_base_dir, PointF(0.0f, 0.0f));
@@ -638,19 +650,19 @@ namespace hvn3 {
 			if (IO::File::Exists("editor_preferences.xml")) {
 
 				Xml::XmlDocument pref = Xml::XmlDocument::Open("editor_preferences.xml");
+				Xml::XmlElement* node = nullptr;
 
-				Xml::XmlElement* last_directory_node = pref.Root().GetChild("last_directory");
-				Xml::XmlElement* last_file_node = pref.Root().GetChild("last_file");
-				Xml::XmlElement* grid_node = pref.Root().GetChild("grid");
+				if (node = pref.Root().GetChild("last_directory"), node != nullptr)
+					_last_directory = node->Text();
 
-				if (last_directory_node != nullptr)
-					_last_directory = last_directory_node->Text();
+				if (node = pref.Root().GetChild("last_file"), node != nullptr)
+					_current_file = node->Text();
 
-				if (last_file_node != nullptr)
-					_current_file = last_file_node->Text();
+				if (node = pref.Root().GetChild("resource_base_directory"), node != nullptr)
+					_resource_base_directory = node->Text();
 
-				if (grid_node != nullptr)
-					room_view_grid_cell_size = SizeF(StringUtils::Parse<float>(grid_node->GetAttribute("w")), StringUtils::Parse<float>(grid_node->GetAttribute("h")));
+				if (node = pref.Root().GetChild("grid"), node != nullptr)
+					room_view_grid_cell_size = SizeF(StringUtils::Parse<float>(node->GetAttribute("w")), StringUtils::Parse<float>(node->GetAttribute("h")));
 
 			}
 
@@ -668,6 +680,7 @@ namespace hvn3 {
 			Xml::XmlDocument pref("preferences");
 			pref.Root().AddChild("last_directory")->SetText(_last_directory);
 			pref.Root().AddChild("last_file")->SetText(_current_file);
+			pref.Root().AddChild("resource_base_directory")->SetText(_resource_base_directory);
 
 			Xml::XmlElement* node = pref.Root().AddChild("grid");
 			node->SetAttribute("w", _room_view->GridCellSize().width);

@@ -6,7 +6,7 @@ using namespace hvn3;
 int main(int argc, char* argv[]) {
 
 	// Initialize game properties.
-	System::Properties properties;
+	GameProperties properties;
 	properties.DisplaySize = SizeI(960, 720);
 	properties.FixedFrameRate = false;
 	properties.DebugMode = false;
