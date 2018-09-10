@@ -109,6 +109,7 @@ namespace hvn3 {
 			void _drawTileCursor(DrawEventArgs& e);
 			void _unsubscribeEditorListeners();
 			void _resubscribeEditorListeners();
+			std::string _makePathRelativeToResourceBaseDirectory(const std::string& path);
 
 			void _initializeUi(); // Initializes the editor user interface.
 			void _initializeUiStyles(); // Initializes widget styles.

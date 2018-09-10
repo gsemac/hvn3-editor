@@ -628,6 +628,9 @@ namespace hvn3 {
 
 			std::string fname = IO::Path::GetFileName(_current_file);
 
+			if (fname.size() <= 0)
+				fname = "untitled";
+
 			if (!StringUtils::EndsWith(fname, _default_file_ext))
 				fname += _default_file_ext;
 
@@ -796,6 +799,18 @@ namespace hvn3 {
 
 			ListenerCollection<IKeyboardListener>::Add(&_widgets);
 			ListenerCollection<IMouseListener>::Add(&_widgets);
+
+		}
+		std::string RoomEditor::_makePathRelativeToResourceBaseDirectory(const std::string& path) {
+
+			std::string::size_type index = StringUtils::IndexOf(path, _resource_base_directory);
+
+			if (index == std::string::npos)
+				return path;
+
+			index += _resource_base_directory.size();
+
+			return path.substr(index, path.size() - index);
 
 		}
 

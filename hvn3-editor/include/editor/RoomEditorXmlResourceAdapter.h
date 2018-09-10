@@ -22,7 +22,7 @@ namespace hvn3 {
 
 				if (node.HasAttribute("id")) {
 
-					String id = node.GetAttribute("id");
+					String id = IO::Path::Combine(_editor->_resource_base_directory, node.GetAttribute("id"));
 
 					// If the background already exists in the background view widget, return it.
 					const Background* ptr = _editor->_backgrounds_view->GetBackgroundById(id);
@@ -51,7 +51,7 @@ namespace hvn3 {
 
 				String id = _editor->_backgrounds_view->GetIdByBackground(data);
 
-				node.SetAttribute("id", id);
+				node.SetAttribute("id", _editor->_makePathRelativeToResourceBaseDirectory(id));
 
 				BaseAdapterT::ExportBackground(data, node);
 
@@ -64,7 +64,7 @@ namespace hvn3 {
 
 					for (auto i = tilesets_node->ChildrenBegin(); i != tilesets_node->ChildrenEnd(); ++i) {
 
-						String id = (*i)->GetAttribute("id");
+						String id = IO::Path::Combine(_editor->_resource_base_directory, (*i)->GetAttribute("id"));
 						int tile_w = StringUtils::Parse<int>((*i)->GetAttribute("tile_w"));
 						int tile_h = StringUtils::Parse<int>((*i)->GetAttribute("tile_h"));
 
@@ -92,7 +92,7 @@ namespace hvn3 {
 				for (auto i = _editor->_tileset_view->Tilesets().begin(); i != _editor->_tileset_view->Tilesets().end(); ++i) {
 
 					Xml::XmlElement* tileset_node = tilesets_node->AddChild("tileset");
-					tileset_node->SetAttribute("id", _editor->_tileset_view->GetIdByTileset(*i));
+					tileset_node->SetAttribute("id", _editor->_makePathRelativeToResourceBaseDirectory(_editor->_tileset_view->GetIdByTileset(*i)));
 					tileset_node->SetAttribute("tile_w", i->TileSize().width);
 					tileset_node->SetAttribute("tile_h", i->TileSize().height);
 

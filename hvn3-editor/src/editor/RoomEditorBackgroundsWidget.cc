@@ -31,12 +31,13 @@ namespace hvn3 {
 
 					if (dialog.ShowDialog()) {
 
-						Background bg(Graphics::Bitmap::FromFile(dialog.FileName()));
+						std::string id = dialog.FileName();
+						Background bg(Graphics::Bitmap::FromFile(id));
 
 						_editor->Room()->GetBackgrounds().Add(bg);
 
 						_backgrounds.push_back(bg);
-						_backgrounds_list->AddItem(dialog.FileName());
+						_backgrounds_list->AddItem(id);
 
 						_backgrounds_list->SetSelectedIndex(_backgrounds_list->Count() - 1);
 

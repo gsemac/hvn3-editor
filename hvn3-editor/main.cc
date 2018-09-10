@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	Graphics::Bitmap::SetDefaultBitmapFlags(Graphics::BitmapFlags::Default);
 
 	// Initialize the editor.
-	RoomPtr editor(new editor::RoomEditor);
+	auto editor = hvn3::make_room<editor::RoomEditor>();
 	manager.Context().GetRooms().SetRoom(editor);
 
 	// Run the game loop.
