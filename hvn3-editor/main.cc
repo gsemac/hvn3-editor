@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
 	// Initialize the editor.
 	auto editor = hvn3::make_room<editor::RoomEditor>();
-	manager.Context().GetRooms().SetRoom(editor);
+	manager.Context().Rooms().SetRoom(editor);
 
 	// Run the game loop.
 	manager.Loop();

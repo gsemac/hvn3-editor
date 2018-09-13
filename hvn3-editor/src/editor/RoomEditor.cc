@@ -47,7 +47,7 @@ namespace hvn3 {
 		void RoomEditor::BackToEditorObject::OnKeyPressed(KeyPressedEventArgs& e) {
 
 			if (Context() && e.Key() == Key::Escape)
-				Context().GetRooms().SetRoom(_editor);
+				Context().Rooms().SetRoom(_editor);
 
 		}
 
@@ -74,9 +74,9 @@ namespace hvn3 {
 			// The escape key is used to exit playtesting, so we save the initial value so we can set/restore it as needed.
 
 			if (_editor_initialized)
-				Context().GetProperties().ExitWithEscapeKey = _properties_exit_with_esc;
+				Context().Properties().ExitWithEscapeKey = _properties_exit_with_esc;
 			else
-				_properties_exit_with_esc = Context().GetProperties().ExitWithEscapeKey;
+				_properties_exit_with_esc = Context().Properties().ExitWithEscapeKey;
 
 			if (!_editor_initialized) {
 
@@ -107,7 +107,7 @@ namespace hvn3 {
 
 			// Match the room size to the size of the display.
 
-			hvn3::SizeI display_size = e.Context().GetDisplay().Size();
+			hvn3::SizeI display_size = e.Context().Display().Size();
 			SetSize(display_size.width, display_size.height);
 
 			_widgets.SetDockableRegion(hvn3::RectangleF(static_cast<hvn3::SizeF>(Size())));
@@ -373,7 +373,7 @@ namespace hvn3 {
 			file_cm->AddSeparator();
 			file_cm->AddItem("Preferences...")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) { _showPreferencesDialog(); });
 			file_cm->AddSeparator();
-			file_cm->AddItem("Exit")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) {	Context().GetGameManager().Exit(); });
+			file_cm->AddItem("Exit")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) {	Context().GameManager().Exit(); });
 
 			hvn3::Gui::ContextMenu* view_cm = new hvn3::Gui::ContextMenu;
 
@@ -476,7 +476,7 @@ namespace hvn3 {
 
 			title += " - " + _editor_name;
 
-			Context().GetDisplay().SetTitle(title);
+			Context().Display().SetTitle(title);
 
 		}
 		void RoomEditor::_hideAllPanelWindows() {
@@ -773,12 +773,12 @@ namespace hvn3 {
 			// Import the room back from the temporary file (why not just parse XML from string?).
 			RoomPtr test_room = _loadRoomFromFileIntoMemory(temp_path, false);
 
-			test_room->GetObjects().Create<BackToEditorObject>(Context().GetRooms().Room());
+			test_room->GetObjects().Create<BackToEditorObject>(Context().Rooms().Room());
 
-			_properties_exit_with_esc = Context().GetProperties().ExitWithEscapeKey;
-			Context().GetProperties().ExitWithEscapeKey = false;
+			_properties_exit_with_esc = Context().Properties().ExitWithEscapeKey;
+			Context().Properties().ExitWithEscapeKey = false;
 
-			Context().GetRooms().SetRoom(test_room);
+			Context().Rooms().SetRoom(test_room);
 
 		}
 		void RoomEditor::_unsubscribeEditorListeners() {
