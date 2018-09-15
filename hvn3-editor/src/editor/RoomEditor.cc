@@ -151,8 +151,11 @@ namespace hvn3 {
 				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->GetTiles().Columns() || tile_map_position.y >= _room->GetTiles().Rows())
 					return;
 
-				// Calculate the value that will be assigned to the tile.
-				int tile_index = (tile_selection.Y() * _tileset_view->TilesetView()->Tileset().Columns()) + tile_selection.X() + 1;
+				int tile_index = 0;
+
+				if (e.Button() == MouseButton::Left)
+					// Calculate the value that will be assigned to the tile.
+					tile_index = (tile_selection.Y() * _tileset_view->TilesetView()->Tileset().Columns()) + tile_selection.X() + 1;
 
 				// Assign the tile to the tile map, and apply auto-tiling if applicable.
 				_room->GetTiles().SetTile(tile_map_position.x, tile_map_position.y, tile_index, 0);
