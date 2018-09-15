@@ -74,8 +74,10 @@ namespace hvn3 {
 			void OnMousePressed(MousePressedEventArgs& e) override;
 			void OnMouseMove(MouseMoveEventArgs& e) override;
 			void OnMouseReleased(MouseReleasedEventArgs& e) override;
+			void OnMouseScroll(MouseScrollEventArgs& e) override;
 			void OnKeyPressed(KeyPressedEventArgs& e) override;
-
+			void OnKeyUp(KeyUpEventArgs& e) override;
+			
 			// Sets the object registry used for listing and instantiating objects.
 			void SetObjectRegistry(const ObjectRegistry& registry);
 			// Returns the room currently being edited.
@@ -90,7 +92,9 @@ namespace hvn3 {
 
 			bool _editor_initialized;
 			bool _has_unsaved_changes;
+			int _zoom_level;
 			PointF _mouse_position;
+			KeyModifiers _key_modifiers;
 			EDITOR_MODE _editor_mode;
 			IObject* _placing_object;
 			ObjectRegistry _object_registry;

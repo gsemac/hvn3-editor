@@ -64,6 +64,7 @@ namespace hvn3 {
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
 			_has_unsaved_changes = false;
+			_zoom_level = 0;
 
 		}
 		void RoomEditor::OnCreate() {
@@ -142,7 +143,7 @@ namespace hvn3 {
 
 			if (_editor_mode == EDITOR_MODE_TILES) {
 
-				if (_tileset_view->TilesetView() == nullptr)
+				if (_tileset_view->TilesetView() == nullptr || !_room_view->HasFocus())
 					return;
 
 				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
@@ -226,7 +227,30 @@ namespace hvn3 {
 			_placing_object = nullptr;
 
 		}
+		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {	
+
+			const int max_zoom_level = 5;
+
+			if (HasFlag(_key_modifiers, KeyModifiers::Control))
+				if (e.Direction() == MouseScrollDirection::Up)
+					_zoom_level = Math::Min(_zoom_level + 1, max_zoom_level);
+				else if (e.Direction() == MouseScrollDirection::Down)
+					_zoom_level = Math::Max(_zoom_level - 1, -max_zoom_level);
+						
+			float zoom_scale = 1.0f;
+			float scale_per_level = 0.5f;
+
+			if (_zoom_level > 0)
+				zoom_scale *= (std::pow)(1.0f + scale_per_level, static_cast<float>(_zoom_level));
+			else if(_zoom_level < 0)
+				zoom_scale *= (std::pow)(1.0f - scale_per_level, static_cast<float>(-_zoom_level));
+
+			_room_view->SetRoomScale(Scale(zoom_scale));
+
+		}
 		void RoomEditor::OnKeyPressed(KeyPressedEventArgs& e) {
+
+			_key_modifiers = e.Modifiers();
 
 			if (e.Key() == Key::F5)
 				_startPlaytest();
@@ -246,6 +270,11 @@ namespace hvn3 {
 				}
 
 			}
+
+		}
+		void RoomEditor::OnKeyUp(KeyUpEventArgs& e) {
+
+			_key_modifiers = e.Modifiers();
 
 		}
 		RoomPtr RoomEditor::Room() {
