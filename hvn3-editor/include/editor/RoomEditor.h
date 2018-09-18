@@ -52,12 +52,12 @@ namespace hvn3 {
 				public KeyboardListener {
 
 			public:
-				BackToEditorObject(RoomPtr editor);
+				BackToEditorObject(IRoomPtr editor);
 
 				void OnKeyPressed(KeyPressedEventArgs& e) override;
 
 			private:
-				RoomPtr _editor;
+				IRoomPtr _editor;
 
 			};
 
@@ -81,7 +81,7 @@ namespace hvn3 {
 			// Sets the object registry used for listing and instantiating objects.
 			void SetObjectRegistry(const ObjectRegistry& registry);
 			// Returns the room currently being edited.
-			RoomPtr Room();
+			IRoomPtr Room();
 
 		private:
 			std::string _editor_name;
@@ -99,7 +99,7 @@ namespace hvn3 {
 			IObject* _placing_object;
 			ObjectRegistry _object_registry;
 			bool _properties_exit_with_esc;
-			hvn3::RoomPtr _room;
+			hvn3::IRoomPtr _room;
 
 			hvn3::Gui::GuiManager _widgets;
 			hvn3::Gui::Window* _left_panel;
@@ -133,7 +133,7 @@ namespace hvn3 {
 			void _savePreferences(); // Saves user preferences to disk.
 
 			void _createNewRoom(int width, int height);
-			RoomPtr _loadRoomFromFileIntoMemory(const std::string& file_path, bool load_resources_into_editor);
+			IRoomPtr _loadRoomFromFileIntoMemory(const std::string& file_path, bool load_resources_into_editor);
 			void _loadRoomFromFileIntoEditor(const std::string& file_path);
 			void _saveRoomToFile(const std::string& file_path, bool is_temporary_file);
 			void _startPlaytest();

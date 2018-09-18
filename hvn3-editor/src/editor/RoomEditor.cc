@@ -40,7 +40,7 @@ namespace hvn3 {
 		}
 
 
-		RoomEditor::BackToEditorObject::BackToEditorObject(RoomPtr editor) :
+		RoomEditor::BackToEditorObject::BackToEditorObject(IRoomPtr editor) :
 			Object(NoOne),
 			_editor(editor) {
 		}
@@ -277,7 +277,7 @@ namespace hvn3 {
 			_key_modifiers = e.Modifiers();
 
 		}
-		RoomPtr RoomEditor::Room() {
+		IRoomPtr RoomEditor::Room() {
 			return _room;
 		}
 		void RoomEditor::SetObjectRegistry(const ObjectRegistry& registry) {
@@ -744,12 +744,12 @@ namespace hvn3 {
 			_updateWindowTitle();
 
 		}
-		RoomPtr RoomEditor::_loadRoomFromFileIntoMemory(const std::string& file_path, bool load_resources_into_editor) {
+		IRoomPtr RoomEditor::_loadRoomFromFileIntoMemory(const std::string& file_path, bool load_resources_into_editor) {
 
 			std::unique_ptr<Xml::IXmlResourceAdapter> adapter = std::make_unique<RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase>>(this, load_resources_into_editor);
 			RoomImporter<> importer(adapter);
 
-			RoomPtr room = importer.Import(file_path);
+			IRoomPtr room = importer.Import(file_path);
 
 			return room;
 
@@ -803,7 +803,7 @@ namespace hvn3 {
 			_saveRoomToFile(temp_path, true);
 
 			// Import the room back from the temporary file (why not just parse XML from string?).
-			RoomPtr test_room = _loadRoomFromFileIntoMemory(temp_path, false);
+			IRoomPtr test_room = _loadRoomFromFileIntoMemory(temp_path, false);
 
 			test_room->GetObjects().Create<BackToEditorObject>(Context().Rooms().Room());
 
