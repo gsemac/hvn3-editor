@@ -33,7 +33,7 @@ namespace hvn3 {
 					// Load the background into the background view widget.
 					Background bg(Graphics::Bitmap::FromFile(id));
 
-					Xml::XmlResourceAdapterBase::ReadDefaultProperties(bg, node);
+					Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(bg, node);
 
 					if (_load_resources_into_editor)
 						_editor->_backgrounds_view->AddBackground(id, bg);
@@ -101,18 +101,18 @@ namespace hvn3 {
 				BaseAdapterT::ExportTiles(data, node);
 
 			}
-			IObject* ImportObject(const Xml::XmlElement& node) const override {
+			IObjectPtr ImportObject(const Xml::XmlElement& node) const override {
 
 				std::string name = node.GetAttribute("name");
 
-				IObject* ptr = _editor->_object_registry.CreateByName(name);
+				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
 
-				Xml::XmlResourceAdapterBase::ReadDefaultProperties(ptr, node);
+				Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(ptr, node);
 
 				return ptr;
 
 			}
-			void ExportObject(const IObject* data, Xml::XmlElement& node) const override {
+			void ExportObject(const IObjectPtr& data, Xml::XmlElement& node) const override {
 
 				node.SetAttribute("name", _editor->_object_registry.GetNameById(data->Id()));
 

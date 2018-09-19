@@ -1,8 +1,6 @@
 #include "hvn3/core/IGameManager.h"
 #include "hvn3/core/GameProperties.h"
 #include "hvn3/io/Path.h"
-#include "hvn3/rooms/RoomExporter.h"
-#include "hvn3/rooms/RoomImporter.h"
 #include "hvn3/rooms/RoomManager.h"
 #include "hvn3/gui2/Button.h"
 #include "hvn3/gui2/MenuStrip.h"
@@ -746,10 +744,10 @@ namespace hvn3 {
 		}
 		IRoomPtr RoomEditor::_loadRoomFromFileIntoMemory(const std::string& file_path, bool load_resources_into_editor) {
 
-			std::unique_ptr<Xml::IXmlResourceAdapter> adapter = std::make_unique<RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase>>(this, load_resources_into_editor);
-			RoomImporter<> importer(adapter);
+			RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase<>> adapter(this, load_resources_into_editor);
+			Xml::XmlDocument document = Xml::XmlDocument::Open(file_path);
 
-			IRoomPtr room = importer.Import(file_path);
+			IRoomPtr room = adapter.ImportRoom(document.Root());
 
 			return room;
 
@@ -778,10 +776,11 @@ namespace hvn3 {
 
 			assert(static_cast<bool>(_room));
 
-			std::unique_ptr<Xml::IXmlResourceAdapter> adapter = std::make_unique<RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase>>(this, false);
-			RoomExporter exporter(adapter);
+			RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase<>> adapter(this, false);
+			Xml::XmlDocument document;
 
-			exporter.Export(*_room, file_path);
+			adapter.ExportRoom(_room, document.Root());
+			document.Save(file_path);
 
 			if (!is_temporary_file) {
 

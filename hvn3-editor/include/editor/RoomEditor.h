@@ -35,7 +35,8 @@ namespace hvn3 {
 			public MouseListener,
 			public KeyboardListener {
 
-			friend class RoomEditorXmlResourceAdapter<Xml::XmlResourceAdapterBase>;
+			template <typename>
+			friend class RoomEditorXmlResourceAdapter;
 			friend class RoomEditorBackgroundsWidget;
 			friend class RoomEditorTilesetsWidget;
 			friend class RoomEditorViewsWidget;
