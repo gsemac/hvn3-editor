@@ -65,7 +65,7 @@ namespace hvn3 {
 		public:
 			RoomEditor();
 
-			void OnCreate() override;
+			void OnCreate(RoomCreateEventArgs& e) override;
 			void OnExit(RoomExitEventArgs& e) override;
 			void OnContextChanged(ContextChangedEventArgs& e) override;
 			void OnRender(DrawEventArgs& e) override;

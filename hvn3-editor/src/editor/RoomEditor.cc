@@ -65,8 +65,8 @@ namespace hvn3 {
 			_zoom_level = 0;
 
 		}
-		void RoomEditor::OnCreate() {
-			Room::OnCreate();
+		void RoomEditor::OnCreate(RoomCreateEventArgs& e) {
+			Room::OnCreate(e);
 
 			SetBackgroundColor(Color(49, 47, 59));
 
