@@ -68,8 +68,7 @@ namespace hvn3 {
 						int tile_w = StringUtils::Parse<int>((*i)->GetAttribute("tile_w"));
 						int tile_h = StringUtils::Parse<int>((*i)->GetAttribute("tile_h"));
 
-						Graphics::Bitmap bmp = Graphics::Bitmap::FromFile(id);
-						Tileset tileset(bmp, SizeI(tile_w, tile_h));
+						Tileset tileset = Tileset::FromFile(id, SizeI(tile_w, tile_h));
 
 						if (_load_resources_into_editor)
 							_editor->_tileset_view->AddTileset(tileset, id);

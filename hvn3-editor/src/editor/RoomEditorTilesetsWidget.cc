@@ -36,6 +36,24 @@ namespace hvn3 {
 			item->SetContextMenu(layers_context_menu);
 			item->AddId(".layers_btn");
 
+			item = menu_strip->AddItem("");
+			item->AddId(".flags_btn");
+			item->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) {
+
+				switch (tileset_view->ViewMode()) {
+				
+				case Gui::TilesetView::ViewMode::Flags:
+					tileset_view->SetViewMode(Gui::TilesetView::ViewMode::Selection);
+					break;
+				
+				case Gui::TilesetView::ViewMode::Selection:
+					tileset_view->SetViewMode(Gui::TilesetView::ViewMode::Flags);
+					break;
+				
+				}
+
+			});
+
 			GetChildren().Add(menu_strip);
 
 		}
@@ -54,6 +72,20 @@ namespace hvn3 {
 					return tilesets_context_menu->ItemAt(index)->Text();
 
 			return String::Empty;
+
+		}
+		Tileset* RoomEditorTilesetsWidget::GetTilesetById(const String& id) {
+
+			size_t index = 0;
+
+			auto begin = ++(++tilesets_context_menu->GetChildren().begin());
+
+			for (auto i = begin; i != tilesets_context_menu->GetChildren().end(); ++i, ++index) {
+				if (i->widget->Text() == id)
+					return &_tilesets[index];
+			}
+
+			return nullptr;
 
 		}
 		void RoomEditorTilesetsWidget::AddTileset(const Tileset& tileset, const String& id) {

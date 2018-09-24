@@ -225,7 +225,7 @@ namespace hvn3 {
 			_placing_object = nullptr;
 
 		}
-		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {	
+		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
 
 			const int max_zoom_level = 5;
 
@@ -234,13 +234,13 @@ namespace hvn3 {
 					_zoom_level = Math::Min(_zoom_level + 1, max_zoom_level);
 				else if (e.Direction() == MouseScrollDirection::Down)
 					_zoom_level = Math::Max(_zoom_level - 1, -max_zoom_level);
-						
+
 			float zoom_scale = 1.0f;
 			float scale_per_level = 0.5f;
 
 			if (_zoom_level > 0)
 				zoom_scale *= (std::pow)(1.0f + scale_per_level, static_cast<float>(_zoom_level));
-			else if(_zoom_level < 0)
+			else if (_zoom_level < 0)
 				zoom_scale *= (std::pow)(1.0f - scale_per_level, static_cast<float>(-_zoom_level));
 
 			_room_view->SetRoomScale(Scale(zoom_scale));
@@ -391,6 +391,9 @@ namespace hvn3 {
 
 			style.SetProperty<Gui::WidgetProperty::BackgroundImage>(Graphics::Bitmap::FromFile("bin/system/icons/layers.png"));
 			_widgets.Renderer()->AddStyle(".layers_btn", style);
+
+			style.SetProperty<Gui::WidgetProperty::BackgroundImage>(Graphics::Bitmap::FromFile("bin/system/icons/flags.png"));
+			_widgets.Renderer()->AddStyle(".flags_btn", style);
 
 		}
 		void RoomEditor::_initializeMenuStrip() {
@@ -781,6 +784,31 @@ namespace hvn3 {
 
 			adapter.ExportRoom(_room, document.Root());
 			document.Save(file_path);
+
+			// Write metadata files for tilesets.
+
+			// Update the tileset list with the current tileset in case it was modified (flags, etc.).
+
+			if (_tileset_view->Tilesets().size() > 0)
+				*_tileset_view->GetTilesetById(_tileset_view->GetIdByTileset(_tileset_view->TilesetView()->Tileset())) = _tileset_view->TilesetView()->Tileset();
+
+			for (auto i = _tileset_view->Tilesets().begin(); i != _tileset_view->Tilesets().end(); ++i) {
+
+				Xml::XmlDocument meta("tileset");
+
+				meta.Root().SetAttribute("version", 0.1f);
+				meta.Root().SetAttribute("tile_width", i->TileSize().width);
+				meta.Root().SetAttribute("tile_height", i->TileSize().height);
+
+				std::stringstream flags;
+				for (size_t j = 0; j < i->Count(); ++j)
+					flags << i->At(j).flag << ',';
+
+				meta.Root().AddChild("flags")->SetText(flags.str());
+
+				meta.Save(IO::Path::SetExtension(_tileset_view->GetIdByTileset(*i), ".xml"));
+
+			}
 
 			if (!is_temporary_file) {
 

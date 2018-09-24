@@ -24,6 +24,7 @@ namespace hvn3 {
 			Gui::TilesetView* TilesetView();
 			const std::vector<Tileset>& Tilesets() const;
 			String GetIdByTileset(const Tileset& tileset) const;
+			Tileset* GetTilesetById(const String& id);
 			void AddTileset(const Tileset& tileset, const String& id);
 
 		private:
