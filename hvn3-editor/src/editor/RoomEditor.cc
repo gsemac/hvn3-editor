@@ -44,9 +44,12 @@ namespace hvn3 {
 		}
 		void RoomEditor::BackToEditorObject::OnKeyPressed(KeyPressedEventArgs& e) {
 
-			if (Context() && e.Key() == Key::Escape)
-				Context().Rooms().SetRoom(_editor);
+			if (_context && e.Key() == Key::Escape)
+				_context.Get<ROOM_MANAGER>().SetRoom(_editor);
 
+		}
+		void RoomEditor::BackToEditorObject::OnContextChanged(ContextChangedEventArgs& e) {
+			_context = e.Context();
 		}
 
 
@@ -73,9 +76,9 @@ namespace hvn3 {
 			// The escape key is used to exit playtesting, so we save the initial value so we can set/restore it as needed.
 
 			if (_editor_initialized)
-				Context().Properties().ExitWithEscapeKey = _properties_exit_with_esc;
+				_context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey = _properties_exit_with_esc;
 			else
-				_properties_exit_with_esc = Context().Properties().ExitWithEscapeKey;
+				_properties_exit_with_esc = _context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey;
 
 			if (!_editor_initialized) {
 
@@ -104,9 +107,11 @@ namespace hvn3 {
 		void RoomEditor::OnContextChanged(ContextChangedEventArgs& e) {
 			Room::OnContextChanged(e);
 
+			_context = e.Context();
+
 			// Match the room size to the size of the display.
 
-			hvn3::SizeI display_size = e.Context().Display().Size();
+			hvn3::SizeI display_size = _context.Get<GAME_MANAGER>().Display().Size();
 			SetSize(display_size.width, display_size.height);
 
 			_widgets.SetDockableRegion(hvn3::RectangleF(static_cast<hvn3::SizeF>(Size())));
@@ -147,7 +152,7 @@ namespace hvn3 {
 				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
 				hvn3::PointF tile_map_position = _room_view->PositionToGridCell(e.Position());
 
-				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->GetTiles().Columns() || tile_map_position.y >= _room->GetTiles().Rows())
+				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->Tiles().Columns() || tile_map_position.y >= _room->Tiles().Rows())
 					return;
 
 				int tile_index = 0;
@@ -157,7 +162,7 @@ namespace hvn3 {
 					tile_index = (tile_selection.Y() * _tileset_view->TilesetView()->Tileset().Columns()) + tile_selection.X() + 1;
 
 				// Assign the tile to the tile map, and apply auto-tiling if applicable.
-				_room->GetTiles().SetTile(tile_map_position.x, tile_map_position.y, tile_index, 0);
+				_room->Tiles().SetTile(tile_map_position.x, tile_map_position.y, tile_index, 0);
 				//AutoTileRenderer().ApplyAutoTilingAt(_room->GetTiles(), tile_map_position.x, tile_map_position.y, 0);
 
 				_has_unsaved_changes = true;
@@ -185,7 +190,7 @@ namespace hvn3 {
 
 				obj->SetPosition(pos);
 
-				_room->GetObjects().Add(obj);
+				_room->Objects().Add(obj);
 
 				_placing_object = obj;
 
@@ -280,6 +285,9 @@ namespace hvn3 {
 		}
 		void RoomEditor::SetObjectRegistry(const ObjectRegistry& registry) {
 			_object_registry = registry;
+		}
+		void RoomEditor::SetRoomProvider(std::function<IRoomPtr(const SizeI&)>&& provider) {
+			_room_provider = std::move(provider);
 		}
 
 		void RoomEditor::_drawTileCursor(DrawEventArgs& e) {
@@ -406,7 +414,7 @@ namespace hvn3 {
 			file_cm->AddSeparator();
 			file_cm->AddItem("Preferences...")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) { _showPreferencesDialog(); });
 			file_cm->AddSeparator();
-			file_cm->AddItem("Exit")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) {	Context().GameManager().Exit(); });
+			file_cm->AddItem("Exit")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this](Gui::WidgetMouseClickEventArgs& e) {	_context.Get<GAME_MANAGER>().Exit(); });
 
 			hvn3::Gui::ContextMenu* view_cm = new hvn3::Gui::ContextMenu;
 
@@ -426,7 +434,7 @@ namespace hvn3 {
 
 				view_cm_foregrounds_item->SetChecked(!view_cm_foregrounds_item->Checked());
 
-				Room()->GetBackgrounds().ForEach([=](Background& i) {
+				Room()->Backgrounds().ForEach([=](Background& i) {
 
 					if (i.IsForeground())
 						i.SetVisible(view_cm_foregrounds_item->Checked());
@@ -494,7 +502,7 @@ namespace hvn3 {
 		}
 		void RoomEditor::_updateWindowTitle() {
 
-			if (!Context())
+			if (!_context)
 				return;
 
 			std::string title;
@@ -509,7 +517,7 @@ namespace hvn3 {
 
 			title += " - " + _editor_name;
 
-			Context().Display().SetTitle(title);
+			_context.Get<GAME_MANAGER>().Display().SetTitle(title);
 
 		}
 		void RoomEditor::_hideAllPanelWindows() {
@@ -728,19 +736,22 @@ namespace hvn3 {
 		void RoomEditor::_createNewRoom(int width, int height) {
 
 			// Create a new room instance and set it as the current instance.
-			_room = std::make_unique<hvn3::Room>(width, height);
+			if (_room_provider)
+				_room = _room_provider(SizeI(width, height));
+			else
+				_room = hvn3::make_room<>(width, height);
 
 			// Set the room's starting background color.
 			_room->SetBackgroundColor(Color::Silver);
 
 			// Set the tile size to match the grid size.
-			_room->GetTiles().SetTileSize(static_cast<SizeI>(_room_view->GridCellSize()));
+			_room->Tiles().SetTileSize(static_cast<SizeI>(_room_view->GridCellSize()));
 
 			// Update the room tied to the RoomView widget.
 			_room_view->SetRoom(_room);
 
 			_current_file = "";
-			_has_unsaved_changes = false;
+			_has_unsaved_changes = true;
 
 			_updateWindowTitle();
 
@@ -832,12 +843,12 @@ namespace hvn3 {
 			// Import the room back from the temporary file (why not just parse XML from string?).
 			IRoomPtr test_room = _loadRoomFromFileIntoMemory(temp_path, false);
 
-			test_room->GetObjects().Create<BackToEditorObject>(Context().Rooms().Room());
+			test_room->Objects().Create<BackToEditorObject>(_context.Get<ROOM_MANAGER>().Room());
 
-			_properties_exit_with_esc = Context().Properties().ExitWithEscapeKey;
-			Context().Properties().ExitWithEscapeKey = false;
+			_properties_exit_with_esc = _context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey;
+			_context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey = false;
 
-			Context().Rooms().SetRoom(test_room);
+			_context.Get<ROOM_MANAGER>().SetRoom(test_room);
 
 		}
 		void RoomEditor::_unsubscribeEditorListeners() {

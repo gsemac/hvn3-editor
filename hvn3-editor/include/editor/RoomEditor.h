@@ -56,9 +56,11 @@ namespace hvn3 {
 				BackToEditorObject(IRoomPtr editor);
 
 				void OnKeyPressed(KeyPressedEventArgs& e) override;
+				void OnContextChanged(ContextChangedEventArgs& e) override;
 
 			private:
 				IRoomPtr _editor;
+				Context _context;
 
 			};
 
@@ -81,6 +83,8 @@ namespace hvn3 {
 			
 			// Sets the object registry used for listing and instantiating objects.
 			void SetObjectRegistry(const ObjectRegistry& registry);
+			void SetRoomProvider(std::function<IRoomPtr(const SizeI&)>&& provider);
+
 			// Returns the room currently being edited.
 			IRoomPtr Room();
 
@@ -99,8 +103,10 @@ namespace hvn3 {
 			EDITOR_MODE _editor_mode;
 			IObject* _placing_object;
 			ObjectRegistry _object_registry;
+			std::function<IRoomPtr(const SizeI&)> _room_provider;
 			bool _properties_exit_with_esc;
 			hvn3::IRoomPtr _room;
+			Context _context;
 
 			hvn3::Gui::GuiManager _widgets;
 			hvn3::Gui::Window* _left_panel;

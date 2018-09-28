@@ -34,7 +34,7 @@ namespace hvn3 {
 						std::string id = dialog.FileName();
 						Background bg(Graphics::Bitmap::FromFile(id));
 
-						_editor->Room()->GetBackgrounds().Add(bg);
+						_editor->Room()->Backgrounds().Add(bg);
 
 						_backgrounds.push_back(bg);
 						_backgrounds_list->AddItem(id);
@@ -213,7 +213,7 @@ namespace hvn3 {
 
 				size_t index = 0;
 
-				_editor->Room()->GetBackgrounds().ForEach([&, this](Background& i) {
+				_editor->Room()->Backgrounds().ForEach([&, this](Background& i) {
 					i = _backgrounds[index++];
 					HVN3_CONTINUE;
 				});

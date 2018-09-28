@@ -18,6 +18,24 @@ namespace hvn3 {
 
 			}
 
+			IRoomPtr ImportRoom(const Xml::XmlElement& node) const override {
+
+				IRoomPtr room;
+
+				int width, height;
+				width = StringUtils::Parse<int>(node["width"]);
+				height = StringUtils::Parse<int>(node["height"]);
+
+				if (_editor->_room_provider)
+					room = _editor->_room_provider(SizeI(width, height));
+				else
+					room = hvn3::make_room<>(SizeI(width, height));
+
+				ReadDefaultProperties(room, node);
+
+				return room;
+
+			}
 			Background ImportBackground(const Xml::XmlElement& node) const override {
 
 				if (node.HasAttribute("id")) {
@@ -43,17 +61,6 @@ namespace hvn3 {
 				}
 				else
 					return BaseAdapterT::ImportBackground(node);
-
-			}
-			void ExportBackground(const Background& data, Xml::XmlElement& node) const override {
-
-				// Find the background in the backgrounds list that this background corresponds to.
-
-				String id = _editor->_backgrounds_view->GetIdByBackground(data);
-
-				node.SetAttribute("id", _editor->_makePathRelativeToResourceBaseDirectory(id));
-
-				BaseAdapterT::ExportBackground(data, node);
 
 			}
 			void ImportTiles(TileManager& data, const Xml::XmlElement& node) const override {
@@ -82,6 +89,29 @@ namespace hvn3 {
 				BaseAdapterT::ImportTiles(data, node);
 
 			}
+			IObjectPtr ImportObject(const Xml::XmlElement& node) const override {
+
+				std::string name = node.GetAttribute("name");
+
+				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
+
+				Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(ptr, node);
+
+				return ptr;
+
+			}
+
+			void ExportBackground(const Background& data, Xml::XmlElement& node) const override {
+
+				// Find the background in the backgrounds list that this background corresponds to.
+
+				String id = _editor->_backgrounds_view->GetIdByBackground(data);
+
+				node.SetAttribute("id", _editor->_makePathRelativeToResourceBaseDirectory(id));
+
+				BaseAdapterT::ExportBackground(data, node);
+
+			}
 			void ExportTiles(const TileManager& data, Xml::XmlElement& node) const override {
 
 				// Export all tilesets.
@@ -98,17 +128,6 @@ namespace hvn3 {
 				}
 
 				BaseAdapterT::ExportTiles(data, node);
-
-			}
-			IObjectPtr ImportObject(const Xml::XmlElement& node) const override {
-
-				std::string name = node.GetAttribute("name");
-
-				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
-
-				Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(ptr, node);
-
-				return ptr;
 
 			}
 			void ExportObject(const IObjectPtr& data, Xml::XmlElement& node) const override {

@@ -151,7 +151,7 @@ namespace hvn3 {
 					AddTileset(Tileset(Graphics::Bitmap::FromFile(textbox_tileset_dir->Text()), SizeI(StringUtils::Parse<int>(textbox_tile_width->Text()),
 						StringUtils::Parse<int>(textbox_tile_height->Text()))), textbox_tileset_dir->Text());
 
-					_editor->_room->GetTiles().AddTileset(_tilesets.back());
+					_editor->_room->Tiles().AddTileset(_tilesets.back());
 
 				}
 
