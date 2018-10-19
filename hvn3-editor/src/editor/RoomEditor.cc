@@ -109,6 +109,15 @@ namespace hvn3 {
 
 			_context = e.Context();
 
+			// Provide context to the room (normally done by a RoomManager, so we need to handle it manually).
+
+			if (_room) {
+
+				ContextChangedEventArgs args(_context);
+				_room->OnContextChanged(args);
+
+			}
+
 			// Match the room size to the size of the display.
 
 			hvn3::SizeI display_size = _context.Get<GAME_MANAGER>().Display().Size();
@@ -747,6 +756,10 @@ namespace hvn3 {
 			// Set the tile size to match the grid size.
 			_room->Tiles().SetTileSize(static_cast<SizeI>(_room_view->GridCellSize()));
 
+			// Provide context to the room (normally done by a RoomManager, so we need to handle it manually).
+			ContextChangedEventArgs args(_context);
+			_room->OnContextChanged(args);
+
 			// Update the room tied to the RoomView widget.
 			_room_view->SetRoom(_room);
 
@@ -762,6 +775,15 @@ namespace hvn3 {
 			Xml::XmlDocument document = Xml::XmlDocument::Open(file_path);
 
 			IRoomPtr room = adapter.ImportRoom(document.Root());
+
+			// Provide context to the room (normally done by a RoomManager, so we need to handle it manually).\
+
+			if (room) {
+
+				ContextChangedEventArgs args(_context);
+				room->OnContextChanged(args);
+
+			}
 
 			return room;
 
