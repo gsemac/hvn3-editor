@@ -102,6 +102,7 @@ namespace hvn3 {
 			KeyModifiers _key_modifiers;
 			EDITOR_MODE _editor_mode;
 			IObject* _placing_object;
+			IObject* _highlight_object;
 			ObjectRegistry _object_registry;
 			std::function<IRoomPtr(const SizeI&)> _room_provider;
 			bool _properties_exit_with_esc;

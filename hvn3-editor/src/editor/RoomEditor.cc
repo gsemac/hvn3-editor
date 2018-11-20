@@ -3,6 +3,7 @@
 #include "hvn3/io/Path.h"
 #include "hvn3/rooms/RoomManager.h"
 #include "hvn3/gui2/Button.h"
+#include "hvn3/gui2/DataGrid.h"
 #include "hvn3/gui2/MenuStrip.h"
 #include "hvn3/gui2/ListBox.h"
 #include "hvn3/gui2/RoomView.h"
@@ -61,6 +62,7 @@ namespace hvn3 {
 
 			_editor_mode = EDITOR_MODE_TILES;
 			_placing_object = nullptr;
+			_highlight_object = nullptr;
 
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
@@ -127,9 +129,34 @@ namespace hvn3 {
 
 		}
 		void RoomEditor::OnRender(DrawEventArgs& e) {
+
 			Room::OnRender(e);
 
 			_widgets.OnDraw(e);
+
+			if (_highlight_object != nullptr) {
+
+				Graphics::GraphicsState state = e.Graphics().Save();
+				Graphics::Transform transform = e.Graphics().GetTransform();
+
+				PointF obj_pos = _highlight_object->Position();
+				PointF offset = _room_view->RoomPositionToGlobalPosition(_highlight_object->Position()) - _highlight_object->Position();
+
+				transform.Translate(offset.x, offset.y);
+
+				e.Graphics().SetTransform(transform);
+
+				//_highlight_object->OnDraw(e);
+
+				float marker_radius = 5.0f;
+				float marker_height = 8.0f;
+
+				e.Graphics().DrawSolidCircle(obj_pos.x, obj_pos.y - marker_height, marker_radius, Color::Yellow);
+				e.Graphics().DrawCircle(obj_pos.x, obj_pos.y - marker_height, marker_radius, Color::Black, 2.0f);
+
+				e.Graphics().Restore(state);
+
+			}
 
 			//_drawTileCursor(e);
 
@@ -159,7 +186,7 @@ namespace hvn3 {
 					return;
 
 				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
-				hvn3::PointF tile_map_position = _room_view->PositionToGridCell(e.Position());
+				hvn3::PointF tile_map_position = _room_view->GlobalPositionToGridCell(e.Position());
 
 				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->Tiles().Columns() || tile_map_position.y >= _room->Tiles().Rows())
 					return;
@@ -184,29 +211,35 @@ namespace hvn3 {
 
 			if (_editor_mode == EDITOR_MODE_OBJECTS) {
 
-				if (!e.Position().In(_room_view->Bounds()))
-					return;
+				if (e.Button() == MouseButton::Left) {
 
-				auto selected_item = _objects_view->SelectedItem();
+					// Create a new object at the mouse position.
 
-				if (selected_item == nullptr)
-					return;
+					if (!e.Position().In(_room_view->Bounds()))
+						return;
 
-				BLOCK_LISTENERS();
+					auto selected_item = _objects_view->SelectedItem();
 
-				IObject* obj = _object_registry.CreateByName(selected_item->Text());
-				PointF pos = _room_view->PositionToRoomPosition(e.Position(), true);
+					if (selected_item == nullptr)
+						return;
 
-				obj->SetPosition(pos);
+					BLOCK_LISTENERS();
 
-				_room->Objects().Add(obj);
+					IObject* obj = _object_registry.CreateByName(selected_item->Text());
+					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
 
-				_placing_object = obj;
+					obj->SetPosition(pos);
 
-				UNBLOCK_LISTENERS();
+					_room->Objects().Add(obj);
 
-				_has_unsaved_changes = true;
-				_updateWindowTitle();
+					_placing_object = obj;
+
+					UNBLOCK_LISTENERS();
+
+					_has_unsaved_changes = true;
+					_updateWindowTitle();
+
+				}
 
 			}
 
@@ -217,8 +250,8 @@ namespace hvn3 {
 				return;
 
 			_mouse_position = e.Position();
-			PointF room_position = _room_view->PositionToRoomPosition(e.Position(), false);
-			PointF grid_position = _room_view->PositionToRoomPosition(e.Position(), true);
+			PointF room_position = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
+			PointF grid_position = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
 
 			switch (_editor_mode) {
 
@@ -236,7 +269,55 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMouseReleased(MouseReleasedEventArgs& e) {
 
-			_placing_object = nullptr;
+			if (_editor_mode == EDITOR_MODE_OBJECTS) {
+
+				_placing_object = nullptr;
+
+				if (e.Button() == MouseButton::Right) {
+
+					// Select the object that was clicked.
+
+					// Get the position that was clicked in room coordinates.
+					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
+
+					// Find the closest objects to the point that was clicked.
+
+					std::vector<IObject*> objects;
+
+					_room->Objects().ForEach([&](const IObjectPtr& obj) {
+						objects.push_back(obj.get());
+					});
+
+					std::sort(objects.begin(), objects.end(), [&](const IObject* lhs, const IObject* rhs) {
+						return Math::Geometry::PointDistance(pos, lhs->Position()) < Math::Geometry::PointDistance(pos, rhs->Position());
+					});
+
+					Gui::ContextMenu* context_menu = new Gui::ContextMenu;
+					Gui::ContextMenu* selection_menu = new Gui::ContextMenu;
+
+					for (auto i = objects.begin(); i != objects.end(); ++i) {
+
+						IObject* ptr = *i;
+
+						auto item = selection_menu->AddItem(StringUtils::ToString(ptr));
+
+						item->SetEventHandler<Gui::WidgetEventType::OnMouseHover>([this, ptr](Gui::WidgetMouseHoverEventArgs& e) {
+							_highlight_object = ptr;
+						});
+
+						if (selection_menu->Count() >= 10) // Limit the number of items
+							break;
+
+					}
+
+					auto item = context_menu->AddItem("Select...");
+					item->SetContextMenu(selection_menu);
+
+					_room_view->SetContextMenu(context_menu);
+
+				}
+
+			}
 
 		}
 		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
