@@ -305,6 +305,39 @@ namespace hvn3 {
 							_highlight_object = ptr;
 						});
 
+						item->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this, ptr](Gui::WidgetMouseClickEventArgs& e) {
+
+							// Open up the property editor for the selected object.
+
+							Gui::Window* property_window = new Gui::Window(200, 200, "Object Properties");
+							Gui::MenuStrip* tool_strip = new Gui::MenuStrip;
+							Gui::Button* ok_button = new Gui::Button("OK");
+							Gui::DataGrid* property_grid = new Gui::DataGrid;
+
+							tool_strip->SetDockStyle(Gui::DockStyle::Top);
+							tool_strip->AddItem("Add Property")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
+							
+								property_grid->AddRow();
+
+							});
+
+							ok_button->SetDockStyle(Gui::DockStyle::Bottom);
+
+							property_grid->SetDockStyle(Gui::DockStyle::Fill);
+							property_grid->AddColumn("Property");
+							property_grid->AddColumn("Value");
+
+							property_window->GetChildren().Add(tool_strip);
+							property_window->GetChildren().Add(ok_button);
+							property_window->GetChildren().Add(property_grid);
+
+							_widgets.Add(property_window);
+
+							Gui::WidgetLayoutBuilder builder;
+							builder.AnchorToInnerEdge(ok_button, Gui::Anchor::Left | Gui::Anchor::Right | Gui::Anchor::Bottom);
+
+						});
+
 						if (selection_menu->Count() >= 10) // Limit the number of items
 							break;
 
