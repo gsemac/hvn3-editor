@@ -316,16 +316,24 @@ namespace hvn3 {
 
 							tool_strip->SetDockStyle(Gui::DockStyle::Top);
 							tool_strip->AddItem("Add Property")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
-							
+
 								property_grid->AddRow();
 
 							});
 
 							ok_button->SetDockStyle(Gui::DockStyle::Bottom);
+							ok_button->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
+
+								property_window->Close();
+
+							});
 
 							property_grid->SetDockStyle(Gui::DockStyle::Fill);
 							property_grid->AddColumn("Property");
 							property_grid->AddColumn("Value");
+							property_grid->AddRow({ "id", StringUtils::ToString(ptr->Id()) });
+							property_grid->AddRow({ "x", StringUtils::ToString(ptr->X()) });
+							property_grid->AddRow({ "y", StringUtils::ToString(ptr->Y()) });
 
 							property_window->GetChildren().Add(tool_strip);
 							property_window->GetChildren().Add(ok_button);
