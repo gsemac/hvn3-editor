@@ -95,6 +95,12 @@ namespace hvn3 {
 
 				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
 
+				_editor->_object_properties[ptr.get()] = std::vector<std::pair<String, String>>();
+
+				for (auto i = node.AttributesBegin(); i != node.AttributesEnd(); ++i)
+					if (!_isDefaultAttribute(i->first))
+						_editor->_object_properties[ptr.get()].push_back(std::make_pair(i->first, i->second));
+
 				Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(ptr, node);
 
 				return ptr;
@@ -134,6 +140,15 @@ namespace hvn3 {
 
 				node.SetAttribute("name", _editor->_object_registry.GetNameById(data->Id()));
 
+				auto properties_iter = _editor->_object_properties.find(data.get());
+
+				if (properties_iter != _editor->_object_properties.end()) {
+
+					for (auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
+						node.SetAttribute(i->first, i->second);
+
+				}
+
 				BaseAdapterT::ExportObject(data, node);
 
 			}
@@ -141,6 +156,15 @@ namespace hvn3 {
 		private:
 			RoomEditor* _editor;
 			bool _load_resources_into_editor;
+
+			bool _isDefaultAttribute(const String& attribute) const {
+
+				return attribute == "name" ||
+					attribute == "x" ||
+					attribute == "y" ||
+					attribute == "id";
+
+			}
 
 		};
 

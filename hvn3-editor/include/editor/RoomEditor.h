@@ -94,6 +94,7 @@ namespace hvn3 {
 			std::string _current_file;
 			std::string _resource_base_directory;
 			std::string _last_directory;
+			std::unordered_map<IObject*, std::vector<std::pair<String, String>>> _object_properties;
 
 			bool _editor_initialized;
 			bool _has_unsaved_changes;
@@ -136,6 +137,7 @@ namespace hvn3 {
 			void _showRoomOpenDialog();
 			void _showRoomSaveDialog();
 			void _showRoomSaveAsDialog();
+			void _showRoomViewContextMenu();
 
 			void _loadPreferences(); // Loads user preferences from disk if preferences file exists.
 			void _savePreferences(); // Saves user preferences to disk.
@@ -145,6 +147,9 @@ namespace hvn3 {
 			void _loadRoomFromFileIntoEditor(const std::string& file_path);
 			void _saveRoomToFile(const std::string& file_path, bool is_temporary_file);
 			void _startPlaytest();
+
+			void _roomView_OnMouseDown(Gui::WidgetMouseDownEventArgs& e);
+			void _roomView_OnMousePressed(Gui::WidgetMousePressedEventArgs& e);
 
 		};
 

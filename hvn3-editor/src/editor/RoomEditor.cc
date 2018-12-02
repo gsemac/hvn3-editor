@@ -177,71 +177,12 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMouseDown(MouseDownEventArgs& e) {
 
-			if (!_room)
-				return;
 
-			if (_editor_mode == EDITOR_MODE_TILES) {
-
-				if (_tileset_view->TilesetView() == nullptr || !_room_view->HasFocus())
-					return;
-
-				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
-				hvn3::PointF tile_map_position = _room_view->GlobalPositionToGridCell(e.Position());
-
-				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->Tiles().Columns() || tile_map_position.y >= _room->Tiles().Rows())
-					return;
-
-				int tile_index = 0;
-
-				if (e.Button() == MouseButton::Left)
-					// Calculate the value that will be assigned to the tile.
-					tile_index = (tile_selection.Y() * _tileset_view->TilesetView()->Tileset().Columns()) + tile_selection.X() + 1;
-
-				// Assign the tile to the tile map, and apply auto-tiling if applicable.
-				_room->Tiles().SetTile(tile_map_position.x, tile_map_position.y, tile_index, 0);
-				//AutoTileRenderer().ApplyAutoTilingAt(_room->GetTiles(), tile_map_position.x, tile_map_position.y, 0);
-
-				_has_unsaved_changes = true;
-				_updateWindowTitle();
-
-			}
 
 		}
 		void RoomEditor::OnMousePressed(MousePressedEventArgs& e) {
 
-			if (_editor_mode == EDITOR_MODE_OBJECTS) {
 
-				if (e.Button() == MouseButton::Left) {
-
-					// Create a new object at the mouse position.
-
-					if (!e.Position().In(_room_view->Bounds()))
-						return;
-
-					auto selected_item = _objects_view->SelectedItem();
-
-					if (selected_item == nullptr)
-						return;
-
-					BLOCK_LISTENERS();
-
-					IObject* obj = _object_registry.CreateByName(selected_item->Text());
-					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
-
-					obj->SetPosition(pos);
-
-					_room->Objects().Add(obj);
-
-					_placing_object = obj;
-
-					UNBLOCK_LISTENERS();
-
-					_has_unsaved_changes = true;
-					_updateWindowTitle();
-
-				}
-
-			}
 
 		}
 		void RoomEditor::OnMouseMove(MouseMoveEventArgs& e) {
@@ -278,7 +219,8 @@ namespace hvn3 {
 					// Select the object that was clicked.
 
 					// Get the position that was clicked in room coordinates.
-					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
+					PointF clicked_pos = e.Position();
+					PointF pos = _room_view->GlobalPositionToRoomPosition(clicked_pos, false);
 
 					// Find the closest objects to the point that was clicked.
 
@@ -301,15 +243,18 @@ namespace hvn3 {
 
 						auto item = selection_menu->AddItem(StringUtils::ToString(ptr));
 
-						item->SetEventHandler<Gui::WidgetEventType::OnMouseHover>([this, ptr](Gui::WidgetMouseHoverEventArgs& e) {
+						item->SetEventHandler<Gui::WidgetEventType::OnMouseEnter>([this, ptr](Gui::WidgetMouseEnterEventArgs& e) {
 							_highlight_object = ptr;
 						});
+						item->SetEventHandler<Gui::WidgetEventType::OnMouseLeave>([this, ptr](Gui::WidgetMouseLeaveEventArgs& e) {
+							_highlight_object = nullptr;
+						});
 
-						item->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this, ptr](Gui::WidgetMouseClickEventArgs& e) {
+						item->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this, ptr, clicked_pos](Gui::WidgetMouseClickEventArgs& e) {
 
 							// Open up the property editor for the selected object.
 
-							Gui::Window* property_window = new Gui::Window(200, 200, "Object Properties");
+							Gui::Window* property_window = new Gui::Window(250, 300, "Object Properties");
 							Gui::MenuStrip* tool_strip = new Gui::MenuStrip;
 							Gui::Button* ok_button = new Gui::Button("OK");
 							Gui::DataGrid* property_grid = new Gui::DataGrid;
@@ -324,6 +269,23 @@ namespace hvn3 {
 							ok_button->SetDockStyle(Gui::DockStyle::Bottom);
 							ok_button->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
 
+								// Clears existing properties as well as making sure the object is already in the map.
+								_object_properties[ptr] = std::vector<std::pair<String, String>>();
+
+								const size_t non_default_rows_index = 3;
+
+								for (size_t i = non_default_rows_index; i < property_grid->RowCount(); ++i) {
+
+									Gui::DataGridRow row = property_grid->Rows(i);
+
+									// Skip properties with blank keys.
+									if (row[0].Length() <= 0)
+										continue;
+
+									_object_properties[ptr].push_back(std::make_pair(row[0], row.Count() > 1 ? row[1] : ""));
+
+								}
+
 								property_window->Close();
 
 							});
@@ -335,6 +297,18 @@ namespace hvn3 {
 							property_grid->AddRow({ "x", StringUtils::ToString(ptr->X()) });
 							property_grid->AddRow({ "y", StringUtils::ToString(ptr->Y()) });
 
+							// Load any properties that have been added for this object.
+
+							auto properties_iter = _object_properties.find(ptr);
+
+							if (properties_iter != _object_properties.end()) {
+
+								for(auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
+									property_grid->AddRow({ i->first, i->second });
+
+							}
+
+							property_window->SetPosition(clicked_pos);
 							property_window->GetChildren().Add(tool_strip);
 							property_window->GetChildren().Add(ok_button);
 							property_window->GetChildren().Add(property_grid);
@@ -487,6 +461,8 @@ namespace hvn3 {
 			_room_view = new Gui::RoomView;
 			_room_view->SetWidth(200.0f);
 			_room_view->SetDockStyle(Gui::DockStyle::Fill);
+			_room_view->SetEventHandler<Gui::WidgetEventType::OnMouseDown>([this](Gui::WidgetMouseDownEventArgs& e) { _roomView_OnMouseDown(e); });
+			_room_view->SetEventHandler<Gui::WidgetEventType::OnMousePressed>([this](Gui::WidgetMousePressedEventArgs& e) { _roomView_OnMousePressed(e); });
 
 			_widgets.Add(window);
 			_widgets.Add(_status_strip);
@@ -818,6 +794,11 @@ namespace hvn3 {
 				_saveRoomToFile(f.FileName(), false);
 
 		}
+		void RoomEditor::_showRoomViewContextMenu() {
+
+
+
+		}
 		void RoomEditor::_loadPreferences() {
 
 			SizeF room_view_grid_cell_size(32.0f, 32.0f);
@@ -993,6 +974,75 @@ namespace hvn3 {
 			_context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey = false;
 
 			_context.Get<ROOM_MANAGER>().SetRoom(test_room);
+
+		}
+		void RoomEditor::_roomView_OnMouseDown(Gui::WidgetMouseDownEventArgs& e) {
+
+			if (!_room)
+				return;
+
+			if (_editor_mode == EDITOR_MODE_TILES) {
+
+				if (_tileset_view->TilesetView() == nullptr || !_room_view->HasFocus())
+					return;
+
+				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
+				hvn3::PointF tile_map_position = _room_view->GlobalPositionToGridCell(e.Position());
+
+				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->Tiles().Columns() || tile_map_position.y >= _room->Tiles().Rows())
+					return;
+
+				int tile_index = 0;
+
+				if (e.Button() == MouseButton::Left)
+					// Calculate the value that will be assigned to the tile.
+					tile_index = (tile_selection.Y() * _tileset_view->TilesetView()->Tileset().Columns()) + tile_selection.X() + 1;
+
+				// Assign the tile to the tile map, and apply auto-tiling if applicable.
+				_room->Tiles().SetTile(tile_map_position.x, tile_map_position.y, tile_index, 0);
+				//AutoTileRenderer().ApplyAutoTilingAt(_room->GetTiles(), tile_map_position.x, tile_map_position.y, 0);
+
+				_has_unsaved_changes = true;
+				_updateWindowTitle();
+
+			}
+
+		}
+		void RoomEditor::_roomView_OnMousePressed(Gui::WidgetMousePressedEventArgs& e) {
+
+			if (_editor_mode == EDITOR_MODE_OBJECTS) {
+
+				if (e.Button() == MouseButton::Left) {
+
+					// Create a new object at the mouse position.
+
+					if (!e.Position().In(_room_view->Bounds()))
+						return;
+
+					auto selected_item = _objects_view->SelectedItem();
+
+					if (selected_item == nullptr)
+						return;
+
+					BLOCK_LISTENERS();
+
+					IObject* obj = _object_registry.CreateByName(selected_item->Text());
+					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
+
+					obj->SetPosition(pos);
+
+					_room->Objects().Add(obj);
+
+					_placing_object = obj;
+
+					UNBLOCK_LISTENERS();
+
+					_has_unsaved_changes = true;
+					_updateWindowTitle();
+
+				}
+
+			}
 
 		}
 		void RoomEditor::_unsubscribeEditorListeners() {
