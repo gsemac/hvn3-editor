@@ -1,5 +1,6 @@
 #include "hvn3/core/IGameManager.h"
 #include "hvn3/core/GameProperties.h"
+#include "hvn3/io/Mouse.h"
 #include "hvn3/io/Path.h"
 #include "hvn3/rooms/RoomManager.h"
 #include "hvn3/gui2/Button.h"
