@@ -96,6 +96,7 @@ namespace hvn3 {
 				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
 
 				_editor->_object_properties[ptr.get()] = std::vector<std::pair<String, String>>();
+				_editor->_object_properties[ptr.get()].push_back(std::make_pair("name", name));
 
 				for (auto i = node.AttributesBegin(); i != node.AttributesEnd(); ++i)
 					if (!_isDefaultAttribute(i->first))
@@ -137,8 +138,6 @@ namespace hvn3 {
 
 			}
 			void ExportObject(const IObjectPtr& data, Xml::XmlElement& node) const override {
-
-				node.SetAttribute("name", _editor->_object_registry.GetNameById(data->Id()));
 
 				auto properties_iter = _editor->_object_properties.find(data.get());
 

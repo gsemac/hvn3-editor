@@ -304,7 +304,7 @@ namespace hvn3 {
 
 							if (properties_iter != _object_properties.end()) {
 
-								for(auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
+								for (auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
 									property_grid->AddRow({ i->first, i->second });
 
 							}
@@ -1033,6 +1033,11 @@ namespace hvn3 {
 					obj->SetPosition(pos);
 
 					_room->Objects().Add(obj);
+
+					// Store the "name" property so that it can be saved when the map is saved.
+					// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
+					_object_properties[obj] = std::vector<std::pair<String, String>>();
+					_object_properties[obj].push_back(std::make_pair("name", selected_item->Text()));
 
 					_placing_object = obj;
 
