@@ -93,7 +93,7 @@ namespace hvn3 {
 
 				std::string name = node.GetAttribute("name");
 
-				IObjectPtr ptr(_editor->_object_registry.CreateByName(name));
+				IObjectPtr ptr(_editor->_object_registry.MakeObject(name));
 
 				_editor->_object_properties[ptr.get()] = std::vector<std::pair<String, String>>();
 				_editor->_object_properties[ptr.get()].push_back(std::make_pair("name", name));

@@ -1027,19 +1027,19 @@ namespace hvn3 {
 
 					BLOCK_LISTENERS();
 
-					IObject* obj = _object_registry.CreateByName(selected_item->Text());
+					IObjectPtr obj = _object_registry.MakeObject(selected_item->Text());
 					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
 
 					obj->SetPosition(pos);
 
-					_room->Objects().Add(obj);
-
 					// Store the "name" property so that it can be saved when the map is saved.
 					// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
-					_object_properties[obj] = std::vector<std::pair<String, String>>();
-					_object_properties[obj].push_back(std::make_pair("name", selected_item->Text()));
+					_object_properties[obj.get()] = std::vector<std::pair<String, String>>();
+					_object_properties[obj.get()].push_back(std::make_pair("name", selected_item->Text()));
 
-					_placing_object = obj;
+					_placing_object = obj.get();
+
+					_room->Objects().Add(obj);
 
 					UNBLOCK_LISTENERS();
 
