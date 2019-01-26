@@ -27,16 +27,10 @@ namespace hvn3 {
 				public IObjectRegistryItem {
 
 			public:
-				ObjectRegistryItem(const std::string& name) :
-					_name(name) {
-				}
+				ObjectRegistryItem(const std::string& name);
 
-				IObjectPtr New() const override {
-					return hvn3::make_object<ObjectType>();
-				}
-				const std::string& Name() const override {
-					return _name;
-				}
+				IObjectPtr New() const override;
+				const std::string& Name() const override;
 
 			private:
 				std::string _name;
@@ -50,32 +44,40 @@ namespace hvn3 {
 
 			// Adds a new object type to the registry.
 			template<typename ObjectType>
-			void RegisterObject(const std::string& name) {
-
-				std::unique_ptr<IObjectRegistryItem> item(new ObjectRegistryItem<ObjectType>(name));
-
-				_registry[name] = std::move(item);
-
-			}
+			void RegisterObject(const std::string& name);
 
 			// Creates a new instance of the object with the given name using its default constructor and returns a pointer to it.
-			IObjectPtr MakeObject(const std::string& key) const {
+			IObjectPtr MakeObject(const std::string& key) const;
 
-				return _registry.at(key)->New();
-
-			}
-
-			registry_type::iterator begin() {
-				return _registry.begin();
-			}
-			registry_type::iterator end() {
-				return _registry.end();
-			}
+			registry_type::iterator begin();
+			registry_type::iterator end();
 
 		private:
 			registry_type _registry;
 
 		};
+
+		template<typename ObjectType>
+		ObjectRegistry::ObjectRegistryItem<ObjectType>::ObjectRegistryItem(const std::string& name) :
+			_name(name) {
+		}
+		template<typename ObjectType>
+		IObjectPtr ObjectRegistry::ObjectRegistryItem<ObjectType>::New() const {
+			return hvn3::make_object<ObjectType>();
+		}
+		template<typename ObjectType>
+		const std::string& ObjectRegistry::ObjectRegistryItem<ObjectType>::Name() const {
+			return _name;
+		}
+
+		template<typename ObjectType>
+		void ObjectRegistry::RegisterObject(const std::string& name) {
+
+			std::unique_ptr<IObjectRegistryItem> item(new ObjectRegistryItem<ObjectType>(name));
+
+			_registry[name] = std::move(item);
+
+		}
 
 	}
 }

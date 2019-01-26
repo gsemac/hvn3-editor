@@ -176,6 +176,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cc" />
+    <ClCompile Include="src\editor\detail\ObjectList.cc" />
+    <ClCompile Include="src\editor\ObjectRegistry.cc" />
     <ClCompile Include="src\editor\RoomEditor.cc" />
     <ClCompile Include="src\editor\RoomEditorBackgroundsWidget.cc" />
     <ClCompile Include="src\editor\RoomEditorStatusStripWidget.cc" />
@@ -186,6 +188,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\editor\detail\ObjectList.h" />
     <ClInclude Include="include\editor\ObjectRegistry.h" />
     <ClInclude Include="include\editor\RoomEditor.h" />
     <ClInclude Include="include\editor\RoomEditorBackgroundsWidget.h" />

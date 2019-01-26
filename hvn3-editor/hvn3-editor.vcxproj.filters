@@ -13,6 +13,12 @@
     <Filter Include="src\editor">
       <UniqueIdentifier>{69b37a3b-3a5c-4e58-9a9a-fc181b102f7f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\editor\detail">
+      <UniqueIdentifier>{51ab9a62-8652-4cbe-bce2-7627ef46a708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\editor\detail">
+      <UniqueIdentifier>{5ee0eb41-3878-400f-bd24-d0f657abfe4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cc" />
@@ -30,6 +36,12 @@
     </ClCompile>
     <ClCompile Include="src\editor\RoomEditorViewsWidget.cc">
       <Filter>src\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\ObjectRegistry.cc">
+      <Filter>src\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\detail\ObjectList.cc">
+      <Filter>src\editor\detail</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +68,9 @@
     </ClInclude>
     <ClInclude Include="include\editor\RoomEditorXmlResourceAdapter.h">
       <Filter>include\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\detail\ObjectList.h">
+      <Filter>include\editor\detail</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

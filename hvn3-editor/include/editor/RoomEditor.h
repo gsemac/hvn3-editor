@@ -8,6 +8,7 @@
 #include "hvn3/xml/XmlResourceAdapterBase.h"
 
 #include "editor/ObjectRegistry.h"
+#include "editor/detail/ObjectList.h"
 
 #include <string>
 
@@ -94,7 +95,8 @@ namespace hvn3 {
 			std::string _current_file;
 			std::string _resource_base_directory;
 			std::string _last_directory;
-			std::unordered_map<IObject*, std::vector<std::pair<String, String>>> _object_properties;
+			detail::ObjectList _object_list;
+			//std::unordered_map<IObject*, std::vector<std::pair<String, String>>> _object_properties;
 
 			bool _editor_initialized;
 			bool _has_unsaved_changes;

@@ -270,9 +270,6 @@ namespace hvn3 {
 							ok_button->SetDockStyle(Gui::DockStyle::Bottom);
 							ok_button->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
 
-								// Clears existing properties as well as making sure the object is already in the map.
-								_object_properties[ptr] = std::vector<std::pair<String, String>>();
-
 								const size_t non_default_rows_index = 3;
 
 								for (size_t i = non_default_rows_index; i < property_grid->RowCount(); ++i) {
@@ -283,7 +280,7 @@ namespace hvn3 {
 									if (row[0].Length() <= 0)
 										continue;
 
-									_object_properties[ptr].push_back(std::make_pair(row[0], row.Count() > 1 ? row[1] : ""));
+									_object_list.SetProperty(ptr, row[0], row.Count() > 1 ? row[1] : "");
 
 								}
 
@@ -300,14 +297,10 @@ namespace hvn3 {
 
 							// Load any properties that have been added for this object.
 
-							auto properties_iter = _object_properties.find(ptr);
+							auto existing_properties = _object_list.GetProperties(ptr);
 
-							if (properties_iter != _object_properties.end()) {
-
-								for (auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
-									property_grid->AddRow({ i->first, i->second });
-
-							}
+							for (auto i = existing_properties.begin(); i != existing_properties.end(); ++i)
+								property_grid->AddRow({ i->first, i->second });
 
 							property_window->SetPosition(clicked_pos);
 							property_window->GetChildren().Add(tool_strip);
@@ -880,7 +873,7 @@ namespace hvn3 {
 
 			IRoomPtr room = adapter.ImportRoom(document.Root());
 
-			// Provide context to the room (normally done by a RoomManager, so we need to handle it manually).\
+			// Provide context to the room (normally done by a RoomManager, so we need to handle it manually).
 
 			if (room) {
 
@@ -968,7 +961,6 @@ namespace hvn3 {
 
 			// Import the room back from the temporary file (why not just parse XML from string?).
 			IRoomPtr test_room = _loadRoomFromFileIntoMemory(temp_path, false);
-
 			test_room->Objects().Create<BackToEditorObject>(_context.Get<ROOM_MANAGER>().Room());
 
 			_properties_exit_with_esc = _context.Get<GAME_MANAGER>().Properties().ExitWithEscapeKey;
@@ -1034,8 +1026,8 @@ namespace hvn3 {
 
 					// Store the "name" property so that it can be saved when the map is saved.
 					// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
-					_object_properties[obj.get()] = std::vector<std::pair<String, String>>();
-					_object_properties[obj.get()].push_back(std::make_pair("name", selected_item->Text()));
+					_object_list.Add(obj);
+					_object_list.SetProperty(obj, "name", selected_item->Text());
 
 					_placing_object = obj.get();
 

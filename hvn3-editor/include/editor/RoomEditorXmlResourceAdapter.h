@@ -93,14 +93,18 @@ namespace hvn3 {
 
 				std::string name = node.GetAttribute("name");
 
-				IObjectPtr ptr(_editor->_object_registry.MakeObject(name));
+				IObjectPtr ptr = _editor->_object_registry.MakeObject(name);
 
-				_editor->_object_properties[ptr.get()] = std::vector<std::pair<String, String>>();
-				_editor->_object_properties[ptr.get()].push_back(std::make_pair("name", name));
+				if (_load_resources_into_editor) {
 
-				for (auto i = node.AttributesBegin(); i != node.AttributesEnd(); ++i)
-					if (!_isDefaultAttribute(i->first))
-						_editor->_object_properties[ptr.get()].push_back(std::make_pair(i->first, i->second));
+					_editor->_object_list.Add(ptr);
+					_editor->_object_list.SetProperty(ptr, "name", name);
+
+					for (auto i = node.AttributesBegin(); i != node.AttributesEnd(); ++i)
+						if (!_isDefaultAttribute(i->first))
+							_editor->_object_list.SetProperty(ptr, i->first, i->second);
+
+				}
 
 				Xml::XmlResourceAdapterBase<>::ReadDefaultProperties(ptr, node);
 
@@ -139,14 +143,10 @@ namespace hvn3 {
 			}
 			void ExportObject(const IObjectPtr& data, Xml::XmlElement& node) const override {
 
-				auto properties_iter = _editor->_object_properties.find(data.get());
+				auto properties = _editor->_object_list.GetProperties(data);
 
-				if (properties_iter != _editor->_object_properties.end()) {
-
-					for (auto i = properties_iter->second.begin(); i != properties_iter->second.end(); ++i)
-						node.SetAttribute(i->first, i->second);
-
-				}
+				for (auto i = properties.begin(); i != properties.end(); ++i)
+					node.SetAttribute(i->first, i->second);
 
 				BaseAdapterT::ExportObject(data, node);
 
