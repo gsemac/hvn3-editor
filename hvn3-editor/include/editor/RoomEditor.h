@@ -81,7 +81,7 @@ namespace hvn3 {
 			void OnMouseScroll(MouseScrollEventArgs& e) override;
 			void OnKeyPressed(KeyPressedEventArgs& e) override;
 			void OnKeyUp(KeyUpEventArgs& e) override;
-			
+
 			// Sets the object registry used for listing and instantiating objects.
 			void SetObjectRegistry(const ObjectRegistry& registry);
 			void SetRoomProvider(std::function<IRoomPtr(const SizeI&)>&& provider);
@@ -104,8 +104,7 @@ namespace hvn3 {
 			PointF _mouse_position;
 			KeyModifiers _key_modifiers;
 			EDITOR_MODE _editor_mode;
-			IObject* _placing_object;
-			IObject* _highlight_object;
+			detail::ObjectList::Item _selected_object;
 			ObjectRegistry _object_registry;
 			std::function<IRoomPtr(const SizeI&)> _room_provider;
 			bool _properties_exit_with_esc;

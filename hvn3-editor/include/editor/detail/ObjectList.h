@@ -24,7 +24,7 @@ namespace hvn3 {
 					Item(IObjectPtr&& object);
 
 					const IObjectPtr& Object() const;
-					const RectangleF& BoundingBox();
+					RectangleF BoundingBox();
 
 					explicit operator bool() const;
 
@@ -41,7 +41,7 @@ namespace hvn3 {
 				typedef std::vector<property_pair_type> property_list_type;
 
 				// Adds an object to the list.
-				void Add(IObjectPtr object);
+				const value_type& Add(IObjectPtr object);
 				// Removes an object from the list.
 				void Remove(const IObjectPtr& object);
 				// Sets the value of the given property to the given object.

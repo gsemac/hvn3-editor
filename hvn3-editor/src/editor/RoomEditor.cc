@@ -62,8 +62,6 @@ namespace hvn3 {
 			_default_file_ext = ".hvn3room";
 
 			_editor_mode = EDITOR_MODE_TILES;
-			_placing_object = nullptr;
-			_highlight_object = nullptr;
 
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
@@ -135,27 +133,14 @@ namespace hvn3 {
 
 			_widgets.OnDraw(e);
 
-			if (_highlight_object != nullptr) {
+			if (_selected_object) {
 
-				Graphics::GraphicsState state = e.Graphics().Save();
-				Graphics::Transform transform = e.Graphics().GetTransform();
+				/*RectangleF rect = _selected_object.BoundingBox();
+				rect.SetPosition(_room_view->RoomPositionToGlobalPosition(rect.Position()));
 
-				PointF obj_pos = _highlight_object->Position();
-				PointF offset = _room_view->RoomPositionToGlobalPosition(_highlight_object->Position()) - _highlight_object->Position();
-
-				transform.Translate(offset.x, offset.y);
-
-				e.Graphics().SetTransform(transform);
-
-				//_highlight_object->OnDraw(e);
-
-				float marker_radius = 5.0f;
-				float marker_height = 8.0f;
-
-				e.Graphics().DrawSolidCircle(obj_pos.x, obj_pos.y - marker_height, marker_radius, Color::Yellow);
-				e.Graphics().DrawCircle(obj_pos.x, obj_pos.y - marker_height, marker_radius, Color::Black, 2.0f);
-
-				e.Graphics().Restore(state);
+				e.Graphics().SetBlendMode(Graphics::BlendOperation::Invert);
+				e.Graphics().DrawRectangle(rect, Color::White, 2.0f);
+				e.Graphics().ResetBlendMode();*/
 
 			}
 
@@ -183,7 +168,19 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMousePressed(MousePressedEventArgs& e) {
 
+			if (_editor_mode == EDITOR_MODE_OBJECTS) {
 
+				// If an object was clicked, select it.
+
+				// Convert the click position to room coordinates.
+				PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
+
+				// Get the object that was clicked.
+
+				detail::ObjectList::Item item = _object_list.Pick(pos);
+				_selected_object = item;
+
+			}
 
 		}
 		void RoomEditor::OnMouseMove(MouseMoveEventArgs& e) {
@@ -199,8 +196,8 @@ namespace hvn3 {
 
 			case EDITOR_MODE_OBJECTS:
 
-				if (_placing_object != nullptr)
-					_placing_object->SetPosition(grid_position);
+				if (_selected_object)
+					_selected_object.Object()->SetPosition(grid_position);
 
 				break;
 
@@ -210,123 +207,6 @@ namespace hvn3 {
 
 		}
 		void RoomEditor::OnMouseReleased(MouseReleasedEventArgs& e) {
-
-			if (_editor_mode == EDITOR_MODE_OBJECTS) {
-
-				_placing_object = nullptr;
-
-				if (e.Button() == MouseButton::Right) {
-
-					// Select the object that was clicked.
-
-					// Get the position that was clicked in room coordinates.
-					PointF clicked_pos = e.Position();
-					PointF pos = _room_view->GlobalPositionToRoomPosition(clicked_pos, false);
-
-					// Find the closest objects to the point that was clicked.
-
-					std::vector<IObject*> objects;
-
-					_room->Objects().ForEach([&](const IObjectPtr& obj) {
-						objects.push_back(obj.get());
-					});
-
-					std::sort(objects.begin(), objects.end(), [&](const IObject* lhs, const IObject* rhs) {
-						return Math::Geometry::PointDistance(pos, lhs->Position()) < Math::Geometry::PointDistance(pos, rhs->Position());
-					});
-
-					Gui::ContextMenu* context_menu = new Gui::ContextMenu;
-					Gui::ContextMenu* selection_menu = new Gui::ContextMenu;
-
-					for (auto i = objects.begin(); i != objects.end(); ++i) {
-
-						IObject* ptr = *i;
-
-						auto item = selection_menu->AddItem(StringUtils::ToString(ptr));
-
-						item->SetEventHandler<Gui::WidgetEventType::OnMouseEnter>([this, ptr](Gui::WidgetMouseEnterEventArgs& e) {
-							_highlight_object = ptr;
-						});
-						item->SetEventHandler<Gui::WidgetEventType::OnMouseLeave>([this, ptr](Gui::WidgetMouseLeaveEventArgs& e) {
-							_highlight_object = nullptr;
-						});
-
-						item->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([this, ptr, clicked_pos](Gui::WidgetMouseClickEventArgs& e) {
-
-							// Open up the property editor for the selected object.
-
-							Gui::Window* property_window = new Gui::Window(250, 300, "Object Properties");
-							Gui::MenuStrip* tool_strip = new Gui::MenuStrip;
-							Gui::Button* ok_button = new Gui::Button("OK");
-							Gui::DataGrid* property_grid = new Gui::DataGrid;
-
-							tool_strip->SetDockStyle(Gui::DockStyle::Top);
-							tool_strip->AddItem("Add Property")->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
-
-								property_grid->AddRow();
-
-							});
-
-							ok_button->SetDockStyle(Gui::DockStyle::Bottom);
-							ok_button->SetEventHandler<Gui::WidgetEventType::OnMouseClick>([=](Gui::WidgetMouseClickEventArgs& e) {
-
-								const size_t non_default_rows_index = 3;
-
-								for (size_t i = non_default_rows_index; i < property_grid->RowCount(); ++i) {
-
-									Gui::DataGridRow row = property_grid->Rows(i);
-
-									// Skip properties with blank keys.
-									if (row[0].Length() <= 0)
-										continue;
-
-									_object_list.SetProperty(ptr, row[0], row.Count() > 1 ? row[1] : "");
-
-								}
-
-								property_window->Close();
-
-							});
-
-							property_grid->SetDockStyle(Gui::DockStyle::Fill);
-							property_grid->AddColumn("Property");
-							property_grid->AddColumn("Value");
-							property_grid->AddRow({ "id", StringUtils::ToString(ptr->Id()) });
-							property_grid->AddRow({ "x", StringUtils::ToString(ptr->X()) });
-							property_grid->AddRow({ "y", StringUtils::ToString(ptr->Y()) });
-
-							// Load any properties that have been added for this object.
-
-							auto existing_properties = _object_list.GetProperties(ptr);
-
-							for (auto i = existing_properties.begin(); i != existing_properties.end(); ++i)
-								property_grid->AddRow({ i->first, i->second });
-
-							property_window->SetPosition(clicked_pos);
-							property_window->GetChildren().Add(tool_strip);
-							property_window->GetChildren().Add(ok_button);
-							property_window->GetChildren().Add(property_grid);
-
-							_widgets.Add(property_window);
-
-							Gui::WidgetLayoutBuilder builder;
-							builder.AnchorToInnerEdge(ok_button, Gui::Anchor::Left | Gui::Anchor::Right | Gui::Anchor::Bottom);
-
-						});
-
-						if (selection_menu->Count() >= 10) // Limit the number of items
-							break;
-
-					}
-
-					auto item = context_menu->AddItem("Select...");
-					item->SetContextMenu(selection_menu);
-
-					_room_view->SetContextMenu(context_menu);
-
-				}
-
-			}
 
 		}
 		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
@@ -1026,10 +906,8 @@ namespace hvn3 {
 
 					// Store the "name" property so that it can be saved when the map is saved.
 					// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
-					_object_list.Add(obj);
+					_selected_object = _object_list.Add(obj);
 					_object_list.SetProperty(obj, "name", selected_item->Text());
-
-					_placing_object = obj.get();
 
 					_room->Objects().Add(obj);
 

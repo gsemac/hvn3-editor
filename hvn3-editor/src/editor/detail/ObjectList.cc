@@ -22,7 +22,7 @@ namespace hvn3 {
 				return _object;
 
 			}
-			const RectangleF& ObjectList::Item::BoundingBox() {
+			RectangleF ObjectList::Item::BoundingBox() {
 
 				if (_bounding_box.Width() <= 0.0f && _bounding_box.Height() <= 0.0f) {
 
@@ -30,15 +30,21 @@ namespace hvn3 {
 					Graphics::Graphics gfx(path);
 					DrawEventArgs args(gfx);
 
+					PointF object_position = _object->Position();
+					_object->SetPosition(0.0f, 0.0f);
+
 					_object->OnDraw(args);
+
+					_object->SetPosition(object_position);
 
 					_bounding_box = path.BoundingBox();
 
 				}
 
-				_bounding_box.SetPosition(_object->Position());
+				RectangleF bounding_box = _bounding_box;
+				bounding_box.SetPosition(bounding_box.Position() + _object->Position());
 
-				return _bounding_box;
+				return bounding_box;
 
 			}
 			ObjectList::Item::operator bool() const {
@@ -51,13 +57,15 @@ namespace hvn3 {
 
 
 
-			void ObjectList::Add(IObjectPtr object) {
+			const ObjectList::value_type& ObjectList::Add(IObjectPtr object) {
 
 				// Initialize the properties vector for this object.
 				_properties[object.get()] = std::vector<std::pair<String, String>>();
 
 				// Move the object into the list.
 				_items.push_back(std::move(Item(std::move(object))));
+
+				return _items.back();
 
 			}
 			void ObjectList::Remove(const IObjectPtr& object) {
