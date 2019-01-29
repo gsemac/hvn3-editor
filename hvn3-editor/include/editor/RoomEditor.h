@@ -103,6 +103,7 @@ namespace hvn3 {
 			int _zoom_level;
 			PointF _mouse_position;
 			KeyModifiers _key_modifiers;
+			MouseButton _mouse_buttons;
 			EDITOR_MODE _editor_mode;
 			detail::ObjectList::Item _selected_object;
 			ObjectRegistry _object_registry;

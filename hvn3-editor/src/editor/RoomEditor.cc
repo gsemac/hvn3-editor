@@ -63,7 +63,8 @@ namespace hvn3 {
 
 			_editor_mode = EDITOR_MODE_TILES;
 
-			_key_modifiers = (hvn3::KeyModifiers)0;
+			_key_modifiers = (KeyModifiers)0;
+			_mouse_buttons = (MouseButton)0;
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
 			_has_unsaved_changes = false;
@@ -169,7 +170,7 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMousePressed(MousePressedEventArgs& e) {
 
-
+			_mouse_buttons |= e.Button();
 
 		}
 		void RoomEditor::OnMouseMove(MouseMoveEventArgs& e) {
@@ -177,25 +178,25 @@ namespace hvn3 {
 			if (!_room)
 				return;
 
-			_mouse_position = e.Position();
-			PointF room_position = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
-			PointF grid_position = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
+			PointF room_position = _room_view->GlobalPositionToRoomPosition(e.Position(), !HasFlag(_key_modifiers, KeyModifiers::Alt));
 
 			switch (_editor_mode) {
 
 			case EDITOR_MODE_OBJECTS:
 
-				if (_selected_object)
-					_selected_object.Object()->SetPosition(grid_position);
+				if (HasFlag(_mouse_buttons, MouseButton::Left) && _selected_object)
+					_selected_object.Object()->SetPosition(room_position);
 
 				break;
 
 			}
 
-			_status_strip->SetText(StringUtils::Format("x: {0}, y: {1}", grid_position.x, grid_position.y));
+			_status_strip->SetText(StringUtils::Format("x: {0}, y: {1}", room_position.x, room_position.y));
 
 		}
 		void RoomEditor::OnMouseReleased(MouseReleasedEventArgs& e) {
+
+			_mouse_buttons &= ~e.Button();
 
 		}
 		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
