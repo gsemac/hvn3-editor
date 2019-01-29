@@ -63,6 +63,7 @@ namespace hvn3 {
 
 			_editor_mode = EDITOR_MODE_TILES;
 
+			_key_modifiers = (hvn3::KeyModifiers)0;
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
 			_has_unsaved_changes = false;
@@ -135,12 +136,12 @@ namespace hvn3 {
 
 			if (_selected_object) {
 
-				/*RectangleF rect = _selected_object.BoundingBox();
+				RectangleF rect = _selected_object.BoundingBox();
 				rect.SetPosition(_room_view->RoomPositionToGlobalPosition(rect.Position()));
 
 				e.Graphics().SetBlendMode(Graphics::BlendOperation::Invert);
-				e.Graphics().DrawRectangle(rect, Color::White, 2.0f);
-				e.Graphics().ResetBlendMode();*/
+				e.Graphics().DrawRectangle(rect, Color::White, 1.0f);
+				e.Graphics().ResetBlendMode();
 
 			}
 
@@ -168,19 +169,7 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMousePressed(MousePressedEventArgs& e) {
 
-			if (_editor_mode == EDITOR_MODE_OBJECTS) {
 
-				// If an object was clicked, select it.
-
-				// Convert the click position to room coordinates.
-				PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
-
-				// Get the object that was clicked.
-
-				detail::ObjectList::Item item = _object_list.Pick(pos);
-				_selected_object = item;
-
-			}
 
 		}
 		void RoomEditor::OnMouseMove(MouseMoveEventArgs& e) {
@@ -883,35 +872,55 @@ namespace hvn3 {
 		}
 		void RoomEditor::_roomView_OnMousePressed(Gui::WidgetMousePressedEventArgs& e) {
 
+			/*
+			Left-click: Create an object at the clicked position
+			Ctrl+Left-click: Select the clicked object so that it can be moved around
+			*/
+
 			if (_editor_mode == EDITOR_MODE_OBJECTS) {
 
 				if (e.Button() == MouseButton::Left) {
 
-					// Create a new object at the mouse position.
+					if (HasFlag(_key_modifiers, KeyModifiers::Control)) {
 
-					if (!e.Position().In(_room_view->Bounds()))
-						return;
+						// Convert the click position to room coordinates.
+						PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
 
-					auto selected_item = _objects_view->SelectedItem();
+						// Get the object that was clicked.
 
-					if (selected_item == nullptr)
-						return;
+						detail::ObjectList::Item item = _object_list.Pick(pos);
+						_selected_object = item;
 
-					BLOCK_LISTENERS();
+					}
+					else {
 
-					IObjectPtr obj = _object_registry.MakeObject(selected_item->Text());
-					PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
+						// Create a new object at the mouse position.
 
-					obj->SetPosition(pos);
+						if (!e.Position().In(_room_view->Bounds()))
+							return;
 
-					// Store the "name" property so that it can be saved when the map is saved.
-					// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
-					_selected_object = _object_list.Add(obj);
-					_object_list.SetProperty(obj, "name", selected_item->Text());
+						auto selected_item = _objects_view->SelectedItem();
 
-					_room->Objects().Add(obj);
+						if (selected_item == nullptr)
+							return;
 
-					UNBLOCK_LISTENERS();
+						BLOCK_LISTENERS();
+
+						IObjectPtr obj = _object_registry.MakeObject(selected_item->Text());
+						PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
+
+						obj->SetPosition(pos);
+
+						// Store the "name" property so that it can be saved when the map is saved.
+						// Both the name and ID of the object are required to be saved later (since different objects can have the same ID).
+						_selected_object = _object_list.Add(obj);
+						_object_list.SetProperty(obj, "name", selected_item->Text());
+
+						_room->Objects().Add(obj);
+
+						UNBLOCK_LISTENERS();
+
+					}
 
 					_has_unsaved_changes = true;
 					_updateWindowTitle();
