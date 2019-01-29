@@ -1,4 +1,4 @@
-#include "editor/RoomEditorViewsWidget.h"
+#include "editor/widgets/RoomEditorViewsWidget.h"
 #include "hvn3/gui2/MenuStrip.h"
 #include "hvn3/gui2/ListBox.h"
 

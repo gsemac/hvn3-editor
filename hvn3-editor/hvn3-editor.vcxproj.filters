@@ -19,22 +19,16 @@
     <Filter Include="src\editor\detail">
       <UniqueIdentifier>{5ee0eb41-3878-400f-bd24-d0f657abfe4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\editor\widgets">
+      <UniqueIdentifier>{adf2f6de-f973-4ef7-b000-a3074a9ce7df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\editor\widgets">
+      <UniqueIdentifier>{98f1b8b6-3665-41e4-a83e-a313f7e92e68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cc" />
     <ClCompile Include="src\editor\RoomEditor.cc">
-      <Filter>src\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\editor\RoomEditorBackgroundsWidget.cc">
-      <Filter>src\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\editor\RoomEditorStatusStripWidget.cc">
-      <Filter>src\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\editor\RoomEditorTilesetsWidget.cc">
-      <Filter>src\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\editor\RoomEditorViewsWidget.cc">
       <Filter>src\editor</Filter>
     </ClCompile>
     <ClCompile Include="src\editor\ObjectRegistry.cc">
@@ -42,6 +36,18 @@
     </ClCompile>
     <ClCompile Include="src\editor\detail\ObjectList.cc">
       <Filter>src\editor\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\widgets\RoomEditorBackgroundsWidget.cc">
+      <Filter>src\editor\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\widgets\RoomEditorStatusStripWidget.cc">
+      <Filter>src\editor\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\widgets\RoomEditorTilesetsWidget.cc">
+      <Filter>src\editor\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor\widgets\RoomEditorViewsWidget.cc">
+      <Filter>src\editor\widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,23 +60,23 @@
     <ClInclude Include="include\editor\RoomEditor.h">
       <Filter>include\editor</Filter>
     </ClInclude>
-    <ClInclude Include="include\editor\RoomEditorBackgroundsWidget.h">
-      <Filter>include\editor</Filter>
-    </ClInclude>
-    <ClInclude Include="include\editor\RoomEditorStatusStripWidget.h">
-      <Filter>include\editor</Filter>
-    </ClInclude>
-    <ClInclude Include="include\editor\RoomEditorTilesetsWidget.h">
-      <Filter>include\editor</Filter>
-    </ClInclude>
-    <ClInclude Include="include\editor\RoomEditorViewsWidget.h">
-      <Filter>include\editor</Filter>
-    </ClInclude>
     <ClInclude Include="include\editor\RoomEditorXmlResourceAdapter.h">
       <Filter>include\editor</Filter>
     </ClInclude>
     <ClInclude Include="include\editor\detail\ObjectList.h">
       <Filter>include\editor\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\widgets\RoomEditorBackgroundsWidget.h">
+      <Filter>include\editor\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\widgets\RoomEditorStatusStripWidget.h">
+      <Filter>include\editor\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\widgets\RoomEditorTilesetsWidget.h">
+      <Filter>include\editor\widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="include\editor\widgets\RoomEditorViewsWidget.h">
+      <Filter>include\editor\widgets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-#include "editor/RoomEditorStatusStripWidget.h"
+#include "editor/widgets/RoomEditorStatusStripWidget.h"
 
 namespace hvn3 {
 	namespace editor {

@@ -179,10 +179,10 @@
     <ClCompile Include="src\editor\detail\ObjectList.cc" />
     <ClCompile Include="src\editor\ObjectRegistry.cc" />
     <ClCompile Include="src\editor\RoomEditor.cc" />
-    <ClCompile Include="src\editor\RoomEditorBackgroundsWidget.cc" />
-    <ClCompile Include="src\editor\RoomEditorStatusStripWidget.cc" />
-    <ClCompile Include="src\editor\RoomEditorTilesetsWidget.cc" />
-    <ClCompile Include="src\editor\RoomEditorViewsWidget.cc" />
+    <ClCompile Include="src\editor\widgets\RoomEditorBackgroundsWidget.cc" />
+    <ClCompile Include="src\editor\widgets\RoomEditorStatusStripWidget.cc" />
+    <ClCompile Include="src\editor\widgets\RoomEditorTilesetsWidget.cc" />
+    <ClCompile Include="src\editor\widgets\RoomEditorViewsWidget.cc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -191,11 +191,11 @@
     <ClInclude Include="include\editor\detail\ObjectList.h" />
     <ClInclude Include="include\editor\ObjectRegistry.h" />
     <ClInclude Include="include\editor\RoomEditor.h" />
-    <ClInclude Include="include\editor\RoomEditorBackgroundsWidget.h" />
-    <ClInclude Include="include\editor\RoomEditorStatusStripWidget.h" />
-    <ClInclude Include="include\editor\RoomEditorTilesetsWidget.h" />
-    <ClInclude Include="include\editor\RoomEditorViewsWidget.h" />
     <ClInclude Include="include\editor\RoomEditorXmlResourceAdapter.h" />
+    <ClInclude Include="include\editor\widgets\RoomEditorBackgroundsWidget.h" />
+    <ClInclude Include="include\editor\widgets\RoomEditorStatusStripWidget.h" />
+    <ClInclude Include="include\editor\widgets\RoomEditorTilesetsWidget.h" />
+    <ClInclude Include="include\editor\widgets\RoomEditorViewsWidget.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

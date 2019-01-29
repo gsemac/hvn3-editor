@@ -15,11 +15,11 @@
 #include "hvn3/xml/XmlDocument.h"
 
 #include "editor/RoomEditor.h"
-#include "editor/RoomEditorBackgroundsWidget.h"
-#include "editor/RoomEditorStatusStripWidget.h"
-#include "editor/RoomEditorTilesetsWidget.h"
-#include "editor/RoomEditorViewsWidget.h"
 #include "editor/RoomEditorXmlResourceAdapter.h"
+#include "editor/widgets/RoomEditorBackgroundsWidget.h"
+#include "editor/widgets/RoomEditorStatusStripWidget.h"
+#include "editor/widgets/RoomEditorTilesetsWidget.h"
+#include "editor/widgets/RoomEditorViewsWidget.h"
 
 namespace hvn3 {
 	namespace editor {

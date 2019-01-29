@@ -6,7 +6,7 @@
 #include "hvn3/native/FileDialog.h"
 
 #include "editor/RoomEditor.h"
-#include "editor/RoomEditorTilesetsWidget.h"
+#include "editor/widgets/RoomEditorTilesetsWidget.h"
 
 namespace hvn3 {
 	namespace editor {
