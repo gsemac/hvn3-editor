@@ -199,29 +199,7 @@ namespace hvn3 {
 			_mouse_buttons &= ~e.Button();
 
 		}
-		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
-
-			// The floating-point zoom factor is calculated on the spot rather than being incremented/decremented.
-			// This is to avoid errors resulting from repeated operations (e.g., adding the zoom increment on each scroll).
-
-			const int MAX_ZOOM_LEVEL = 10;
-			const float ZOOM_INCREMENT = 0.5f;
-
-			if (e.Direction() == MouseScrollDirection::Up)
-				_zoom_level = Math::Min(_zoom_level + 1, MAX_ZOOM_LEVEL);
-			else if (e.Direction() == MouseScrollDirection::Down)
-				_zoom_level = Math::Max(_zoom_level - 1, -MAX_ZOOM_LEVEL);
-
-			float zoom = 1.0f + (ZOOM_INCREMENT * static_cast<float>(Math::Abs(_zoom_level)));
-
-			if (_zoom_level < 0)
-				zoom = 1.0f / zoom;
-
-			std::cout << "level: " << _zoom_level << " @ " << zoom << "x" << std::endl;
-
-			_room_view->SetZoom(e.Position() - _room_view->FixedPosition(), zoom);
-
-		}
+		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {}
 		void RoomEditor::OnKeyPressed(KeyPressedEventArgs& e) {
 
 			_key_modifiers = e.Modifiers();
