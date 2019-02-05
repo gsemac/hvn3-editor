@@ -63,12 +63,12 @@ namespace hvn3 {
 
 			_editor_mode = EDITOR_MODE_TILES;
 
+			_zoom_level = 0;
 			_key_modifiers = (KeyModifiers)0;
 			_mouse_buttons = (MouseButton)0;
 			_editor_initialized = false;
 			_properties_exit_with_esc = false;
 			_has_unsaved_changes = false;
-			_zoom_level = 0;
 
 		}
 		void RoomEditor::OnCreate(RoomCreateEventArgs& e) {
@@ -138,7 +138,7 @@ namespace hvn3 {
 			if (_selected_object) {
 
 				RectangleF rect = _selected_object.BoundingBox();
-				rect.SetPosition(_room_view->RoomPositionToGlobalPosition(rect.Position()));
+				rect.SetPosition(_room_view->WorldPositionToDisplayPosition(rect.Position()));
 
 				e.Graphics().SetBlendMode(Graphics::BlendOperation::Invert);
 				e.Graphics().DrawRectangle(rect, Color::White, 1.0f);
@@ -178,7 +178,7 @@ namespace hvn3 {
 			if (!_room)
 				return;
 
-			PointF room_position = _room_view->GlobalPositionToRoomPosition(e.Position(), !HasFlag(_key_modifiers, KeyModifiers::Alt));
+			PointF room_position = _room_view->DisplayPositionToWorldPosition(e.Position(), !HasFlag(_key_modifiers, KeyModifiers::Alt));
 
 			switch (_editor_mode) {
 
@@ -201,23 +201,25 @@ namespace hvn3 {
 		}
 		void RoomEditor::OnMouseScroll(MouseScrollEventArgs& e) {
 
-			const int max_zoom_level = 5;
+			// The floating-point zoom factor is calculated on the spot rather than being incremented/decremented.
+			// This is to avoid errors resulting from repeated operations (e.g., adding the zoom increment on each scroll).
 
-			if (HasFlag(_key_modifiers, KeyModifiers::Control))
-				if (e.Direction() == MouseScrollDirection::Up)
-					_zoom_level = Math::Min(_zoom_level + 1, max_zoom_level);
-				else if (e.Direction() == MouseScrollDirection::Down)
-					_zoom_level = Math::Max(_zoom_level - 1, -max_zoom_level);
+			const int MAX_ZOOM_LEVEL = 10;
+			const float ZOOM_INCREMENT = 0.5f;
 
-			float zoom_scale = 1.0f;
-			float scale_per_level = 0.5f;
+			if (e.Direction() == MouseScrollDirection::Up)
+				_zoom_level = Math::Min(_zoom_level + 1, MAX_ZOOM_LEVEL);
+			else if (e.Direction() == MouseScrollDirection::Down)
+				_zoom_level = Math::Max(_zoom_level - 1, -MAX_ZOOM_LEVEL);
 
-			if (_zoom_level > 0)
-				zoom_scale *= (std::pow)(1.0f + scale_per_level, static_cast<float>(_zoom_level));
-			else if (_zoom_level < 0)
-				zoom_scale *= (std::pow)(1.0f - scale_per_level, static_cast<float>(-_zoom_level));
+			float zoom = 1.0f + (ZOOM_INCREMENT * static_cast<float>(Math::Abs(_zoom_level)));
 
-			_room_view->SetRoomScale(Scale(zoom_scale));
+			if (_zoom_level < 0)
+				zoom = 1.0f / zoom;
+
+			std::cout << "level: " << _zoom_level << " @ " << zoom << "x" << std::endl;
+
+			_room_view->SetZoom(e.Position() - _room_view->FixedPosition(), zoom);
 
 		}
 		void RoomEditor::OnKeyPressed(KeyPressedEventArgs& e) {
@@ -849,8 +851,11 @@ namespace hvn3 {
 				if (_tileset_view->TilesetView() == nullptr || !_room_view->HasFocus())
 					return;
 
+				if (e.Button() != MouseButton::Left && e.Button() != MouseButton::Right)
+					return;
+
 				hvn3::RectangleI tile_selection = _tileset_view->TilesetView()->SelectedRegion();
-				hvn3::PointF tile_map_position = _room_view->GlobalPositionToGridCell(e.Position());
+				hvn3::PointF tile_map_position = _room_view->DisplayPositionToGridCell(e.Position());
 
 				if (tile_map_position.x < 0.0f || tile_map_position.y < 0.0f || tile_map_position.x >= _room->Tiles().Columns() || tile_map_position.y >= _room->Tiles().Rows())
 					return;
@@ -885,7 +890,7 @@ namespace hvn3 {
 					if (HasFlag(_key_modifiers, KeyModifiers::Control)) {
 
 						// Convert the click position to room coordinates.
-						PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), false);
+						PointF pos = _room_view->DisplayPositionToWorldPosition(e.Position(), false);
 
 						// Get the object that was clicked.
 
@@ -908,7 +913,7 @@ namespace hvn3 {
 						BLOCK_LISTENERS();
 
 						IObjectPtr obj = _object_registry.MakeObject(selected_item->Text());
-						PointF pos = _room_view->GlobalPositionToRoomPosition(e.Position(), true);
+						PointF pos = _room_view->DisplayPositionToWorldPosition(e.Position(), true);
 
 						obj->SetPosition(pos);
 
